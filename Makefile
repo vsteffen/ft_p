@@ -21,6 +21,8 @@ AR 		=	/usr/bin/ar
 RANLIB 	=	/usr/bin/ranlib
 GIT		=	/usr/bin/git
 
+UNAME_S := $(shell uname -s)
+
 OBJ = $(patsubst %.c, $(OPATH)/%.o, $(SRC))
 
 CFLAGS = -Wall -Wextra -Werror -g
@@ -61,31 +63,33 @@ define PRINT_STATUS
 	$(if $(filter $(3),-n),printf $(1),echo ']')
 endef
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re pre-check-submodule pre-check-lib
 
-all: pre-check-submodule pre-check-lib $(NAME)
+all: $(NAME)
 
 pre-check-submodule:
-	@printf $(PROJECT)": Init and update submodules ... "
-	@$(GIT) submodule init &>/dev/null
-	@$(GIT) submodule update --recursive --remote &>/dev/null
+	@echo $(PROJECT)": Init and update submodules ... "
+	@$(GIT) submodule init > /dev/null  # can't directly redirect stdout on /dev/null cause of sync wait on Linux
+	@$(GIT) submodule update --recursive --remote > /dev/null
+	@printf $(PROJECT)": pre-check-submodule rule "
 	@$(call PRINT_STATUS,UP-TO-DATE,SUCCESS)
 
-pre-check-lib:
-	@printf $(PROJECT)": Compile and verify libraries ... "
-	@$(MAKE) -C $(LIBFT) &>/dev/null
+pre-check-lib: pre-check-submodule
+	@echo $(PROJECT)": Compile and verify libraries ... "
+	$(if $(filter $(UNAME_S),Darwin),@$(MAKE) -C $(LIBFT) > /dev/null,@$(MAKE) no-asm -C $(LIBFT) > /dev/null)
+	@printf $(PROJECT)": pre-check-lib rule "
 	@$(call PRINT_STATUS,UP-TO-DATE,SUCCESS)
 
-$(NAME): $(OPATH) $(OBJ)
+$(NAME): pre-check-submodule pre-check-lib $(OPATH) $(OBJ)
 	$(if $(filter $(COMPILE),yes),@echo ']')
 	@printf $(PROJECT)": Building $@ ... "
 	@$(CC) -o $@ $(CFLAGS) $(OBJ) $(LPATH) $(HPATH)
 	@$(call PRINT_STATUS,DONE,SUCCESS)
 
-$(OPATH)/%.o: $(CPATH)/%.c
-	@$(CC) $(CFLAGS) -c $< -o $@ $(HPATH)
+$(OPATH)/%.o: $(CPATH)/%.c | pre-check-submodule pre-check-lib
 	$(if $(filter $(COMPILE),no),@printf $(PROJECT)': Files compiling [')
 	@$(eval COMPILE := yes)
+	@$(CC) $(CFLAGS) -c $< -o $@ $(HPATH)
 	$(call PRINT_GREEN,.)
 
 $(OPATH):
@@ -101,7 +105,7 @@ clean:
 fclean: clean
 	@$(RM) -f $(NAME)
 	@echo $(PROJECT)": executable clean"
-	@$(MAKE) fclean -C $(LIBFT) &>/dev/null
+	@-$(MAKE) fclean -C $(LIBFT) > /dev/null
 	@echo $(PROJECT)": libraries fcleaned"
 	@printf $(PROJECT)": fclean rules "
 	@$(call PRINT_STATUS,DONE,SUCCESS)
