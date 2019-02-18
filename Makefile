@@ -10,8 +10,10 @@
 #                                                                              #
 # **************************************************************************** #
 
-PROJECT	= ft_p
-NAME	= ft_p
+PROJECT	=	ft_p
+NAME	=	ft_p
+BIN_SRV	=	serveur
+BIN_CLT	=	client
 
 CC 		=	/usr/bin/clang
 RM 		=	/bin/rm
@@ -23,7 +25,10 @@ GIT		=	/usr/bin/git
 
 UNAME_S := $(shell uname -s)
 
-OBJ = $(patsubst %.c, $(OPATH)/%.o, $(SRC))
+OBJ_SRV	=	$(patsubst %.c, $(OPATH)/%.o, $(SRC_SRV))
+OBJ_CLT	=	$(patsubst %.c, $(OPATH)/%.o, $(SRC_CLT))
+
+OBJ = $(OBJ_SRV) $(OBJ_CLT)
 
 CFLAGS = -Wall -Wextra -Werror -g
 
@@ -34,11 +39,16 @@ LIBFT 	=	$(LIBSRCS)/libft
 ROOT  	=	$(shell /bin/pwd)
 OPATH 	=	$(ROOT)/objs
 CPATH 	=	$(ROOT)/srcs
+SRVPATH	=	/server
+CLTPATH	=	/client
 LPATH	=	$(LIBFT)/libft.a
 HPATH 	=	-I $(ROOT)/includes -I $(LIBFT)/includes
 
-SRC =	ft_p.c
+SRC_SRV	=	$(SRVPATH)/server.c
 
+SRC_CLT	=	$(CLTPATH)/client.c
+
+SRC	=	$(SRC_SRV) $(SRC_CLT)
 
 COMPILE = no
 
@@ -63,7 +73,7 @@ define PRINT_STATUS
 	$(if $(filter $(3),-n),printf $(1),echo ']')
 endef
 
-.PHONY: all clean fclean re pre-check-submodule pre-check-lib
+.PHONY: all clean fclean re pre-check-submodule pre-check-lib lib-clean
 
 all: $(NAME)
 
@@ -82,8 +92,11 @@ pre-check-lib: pre-check-submodule
 
 $(NAME): pre-check-submodule pre-check-lib $(OPATH) $(OBJ)
 	$(if $(filter $(COMPILE),yes),@echo ']')
-	@printf $(PROJECT)": Building $@ ... "
-	@$(CC) -o $@ $(CFLAGS) $(OBJ) $(LPATH) $(HPATH)
+	@printf $(PROJECT)": Building $(BIN_SRV) ... "
+	@$(CC) -o $(BIN_SRV) $(CFLAGS) $(OBJ_SRV) $(LPATH) $(HPATH)
+	@$(call PRINT_STATUS,DONE,SUCCESS)
+	@printf $(PROJECT)": Building $(BIN_CLT) ... "
+	@$(CC) -o $(BIN_CLT) $(CFLAGS) $(OBJ_CLT) $(LPATH) $(HPATH)
 	@$(call PRINT_STATUS,DONE,SUCCESS)
 
 $(OPATH)/%.o: $(CPATH)/%.c | pre-check-submodule pre-check-lib
@@ -93,7 +106,7 @@ $(OPATH)/%.o: $(CPATH)/%.c | pre-check-submodule pre-check-lib
 	$(call PRINT_GREEN,.)
 
 $(OPATH):
-	@$(MKDIR) $@
+	@$(MKDIR) $@ $@$(SRVPATH) $@$(CLTPATH)
 	@echo $(PROJECT)": Directory for objects created"
 
 clean:
@@ -103,11 +116,15 @@ clean:
 	@$(call PRINT_STATUS,DONE,SUCCESS)
 
 fclean: clean
-	@$(RM) -f $(NAME)
-	@echo $(PROJECT)": executable clean"
-	@-$(MAKE) fclean -C $(LIBFT) > /dev/null
-	@echo $(PROJECT)": libraries fcleaned"
-	@printf $(PROJECT)": fclean rules "
+	@$(RM) -f $(BIN_SRV) $(BIN_CLT)
+	@echo $(PROJECT)": executables clean"
+	@printf $(PROJECT)": fclean rule "
 	@$(call PRINT_STATUS,DONE,SUCCESS)
 
 re: fclean all
+
+lib-clean:
+	@-$(MAKE) fclean -C $(LIBFT) > /dev/null
+	@echo $(PROJECT)": libraries fcleaned"
+	@printf $(PROJECT)": lib-clean rule "
+	@$(call PRINT_STATUS,DONE,SUCCESS)
