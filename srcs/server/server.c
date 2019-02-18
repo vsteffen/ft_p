@@ -20,7 +20,7 @@ void	usage(char *prog)
 
 void	exit_message(char *message, uint8_t ret)
 {
-	ft_printf("ft_p-server: %s\n", message);
+	ft_printf(BIN_SRV": %s\n", message);
 	exit(ret);
 }
 
@@ -52,11 +52,11 @@ int		main(int ac, char **av)
 
 	if (ac != 2)
 		usage(av[0]);
-	ftp_srv.port = (uint16_t)ft_atoi(av[1]);
-	ftp_srv.sock = create_server(ftp_srv.port);
+	ftp_srv.sock = create_server((uint16_t)ft_atoi(av[1]));
 	tmp_slen = sizeof(tmp_sin);
 	getsockname(ftp_srv.sock, (struct sockaddr *)&tmp_sin, &tmp_slen);
-	ft_printf("ft_p-server: Port use: [%u]\nft_p-server: Waiting for connection ...\n", ntohs(tmp_sin.sin_port));
+	ftp_srv.port = ntohs(tmp_sin.sin_port);
+	ft_printf("ft_p-server: Port use: [%u]\nft_p-server: Waiting for connection ...\n", ftp_srv.port);
 	if ((ftp_srv.cs = accept(ftp_srv.sock, (struct sockaddr*)&ftp_srv.csin, &ftp_srv.cs)) == (socklen_t)-1)
 		exit_message("Fail to accept connection on socket", 4);
 	while (get_next_line(ftp_srv.cs, &buff) > 0)

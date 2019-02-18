@@ -6,6 +6,8 @@
 # include <netdb.h>
 # include <arpa/inet.h>
 
+# define BIN_SRV "serveur"
+# define BIN_CLT "client"
 # define SOCK_CONNECTION_QUEUE 42
 
 typedef struct		s_elem {
@@ -27,6 +29,11 @@ typedef struct		s_ftp_srv {
 }					t_ftp_srv;
 
 typedef struct		s_ftp_clt {
+	int 				sock;
+	char				*addr;
+	uint16_t			port;
+	socklen_t			cs;
+	struct sockaddr_in	csin;
 }					t_ftp_clt;
 
 #endif
