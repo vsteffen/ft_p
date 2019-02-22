@@ -50,7 +50,9 @@ int		main(int ac, char **av)
 	ftp_clt.port = (uint16_t)ft_atoi(av[2]);
 	ftp_clt.addr = av[1];
 	ftp_clt.sock = create_client(ftp_clt.addr, ftp_clt.port);
-	ft_printf("%{FD}Hello world!\n", ftp_clt.sock);
+	send(ftp_clt.sock, "Hello World!", ft_strlen("Hello World!"), 0);
+	while (42)
+	{}
 	close(ftp_clt.sock);
 	return (0);
 }

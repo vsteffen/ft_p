@@ -39,12 +39,14 @@ LIBFT 	=	$(LIBSRCS)/libft
 ROOT  	=	$(shell /bin/pwd)
 OPATH 	=	$(ROOT)/objs
 CPATH 	=	$(ROOT)/srcs
-SRVPATH	=	/serveur
+SRVPATH	=	/server
 CLTPATH	=	/client
 LPATH	=	$(LIBFT)/libft.a
 HPATH 	=	-I $(ROOT)/includes -I $(LIBFT)/includes
 
-SRC_SRV	=	$(SRVPATH)/server.c
+SRC_SRV	=	$(SRVPATH)/server.c \
+			$(SRVPATH)/handle_connection.c \
+			$(SRVPATH)/signals.c
 
 SRC_CLT	=	$(CLTPATH)/client.c
 

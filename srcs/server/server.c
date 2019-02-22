@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.c                                           :+:      :+:    :+:   */
+/*   serveur.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vsteffen <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -48,7 +48,6 @@ int		main(int ac, char **av)
 	t_ftp_srv			ftp_srv;
 	struct sockaddr_in	tmp_sin;
 	socklen_t			tmp_slen;
-	char				*buff;
 
 	if (ac != 2)
 		usage(av[0]);
@@ -56,12 +55,10 @@ int		main(int ac, char **av)
 	tmp_slen = sizeof(tmp_sin);
 	getsockname(ftp_srv.sock, (struct sockaddr *)&tmp_sin, &tmp_slen);
 	ftp_srv.port = ntohs(tmp_sin.sin_port);
-	ft_printf("ft_p-server: Port use: [%u]\nft_p-server: Waiting for connection ...\n", ftp_srv.port);
-	if ((ftp_srv.cs = accept(ftp_srv.sock, (struct sockaddr*)&ftp_srv.csin, &ftp_srv.cs)) == (socklen_t)-1)
-		exit_message("Fail to accept connection on socket", 4);
-	while (get_next_line(ftp_srv.cs, &buff) > 0)
-		ft_printf("Receive: [%s]\n", buff);
+	ft_printf(BIN_SRV": Port use: [%u]\n"BIN_SRV": Waiting for connection ...\n", ftp_srv.port);
+	singleton(&ftp_srv, 1);
+	signal(SIGINT, signal_handler);
+	handle_connection(&ftp_srv);
 	close(ftp_srv.cs);
-	close(ftp_srv.sock);
 	return (0);
 }
