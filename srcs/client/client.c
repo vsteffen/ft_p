@@ -43,16 +43,17 @@ int		create_client(char *addr, uint16_t port)
 
 int		main(int ac, char **av)
 {
-	t_ftp_clt			ftp_clt;
+	t_clt			clt;
 
 	if (ac != 3)
 		usage(av[0]);
-	ftp_clt.port = (uint16_t)ft_atoi(av[2]);
-	ftp_clt.addr = av[1];
-	ftp_clt.sock = create_client(ftp_clt.addr, ftp_clt.port);
-	send(ftp_clt.sock, "Hello World!", ft_strlen("Hello World!"), 0);
-	while (42)
-	{}
-	close(ftp_clt.sock);
+	clt.port = (uint16_t)ft_atoi(av[2]);
+	clt.addr = av[1];
+	clt.sock = create_client(clt.addr, clt.port);
+	ft_printf(BIN_CLT": Connected on ftp server [%s:%s]\n", av[1], av[2]);
+	get_clt(&clt, 1);
+	signal(SIGINT, signal_handler_clt);
+	handle_connection_clt(&clt);
+	close(clt.sock);
 	return (0);
 }

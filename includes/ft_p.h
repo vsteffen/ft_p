@@ -16,29 +16,32 @@ typedef struct		s_cmd {
 	char			buff[REQUEST_BUFF];
 }					t_cmd;
 
-typedef struct		s_ftp_srv {
+typedef struct		s_srv {
 	int 				sock;
 	uint16_t			port;
 	socklen_t			cs;
 	struct sockaddr_in	csin;
 	struct s_cmd		cmd;
-}					t_ftp_srv;
+	pid_t				pid;
+}					t_srv;
 
-typedef struct		s_ftp_clt {
+typedef struct		s_clt {
 	int 				sock;
 	char				*addr;
 	uint16_t			port;
 	socklen_t			cs;
 	struct sockaddr_in	csin;
 	struct s_cmd		cmd;
-}					t_ftp_clt;
+}					t_clt;
 
 
-void				handle_connection(t_ftp_srv *ftp_srv);
+void				handle_connection_srv(t_srv *srv);
+void				handle_connection_clt(t_clt *clt);
 void				exit_message(char *message, uint8_t ret);
 
-
-t_ftp_srv			*singleton(t_ftp_srv *ftp_srv, int i);
-void				signal_handler(int s);
+t_srv				*get_srv(t_srv *srv, int i);
+t_clt				*get_clt(t_clt *clt, int i);
+void				signal_handler_srv(int s);
+void				signal_handler_clt(int s);
 
 #endif

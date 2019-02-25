@@ -45,20 +45,21 @@ int		create_server(uint16_t port)
 
 int		main(int ac, char **av)
 {
-	t_ftp_srv			ftp_srv;
+	t_srv				srv;
 	struct sockaddr_in	tmp_sin;
 	socklen_t			tmp_slen;
 
 	if (ac != 2)
 		usage(av[0]);
-	ftp_srv.sock = create_server((uint16_t)ft_atoi(av[1]));
+	srv.sock = create_server((uint16_t)ft_atoi(av[1]));
 	tmp_slen = sizeof(tmp_sin);
-	getsockname(ftp_srv.sock, (struct sockaddr *)&tmp_sin, &tmp_slen);
-	ftp_srv.port = ntohs(tmp_sin.sin_port);
-	ft_printf(BIN_SRV": Port use: [%u]\n"BIN_SRV": Waiting for connection ...\n", ftp_srv.port);
-	singleton(&ftp_srv, 1);
-	signal(SIGINT, signal_handler);
-	handle_connection(&ftp_srv);
-	close(ftp_srv.cs);
+	getsockname(srv.sock, (struct sockaddr *)&tmp_sin, &tmp_slen);
+	srv.port = ntohs(tmp_sin.sin_port);
+	ft_printf(BIN_SRV": Port use: [%u]\n"BIN_SRV": Waiting for connection ...\n", srv.port);
+	srv.pid = 0;
+	get_srv(&srv, 1);
+	signal(SIGINT, signal_handler_srv);
+	handle_connection_srv(&srv);
+	close(srv.cs);
 	return (0);
 }
