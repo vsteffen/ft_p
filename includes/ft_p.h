@@ -10,10 +10,10 @@
 # define BIN_SRV "serveur"
 # define BIN_CLT "client"
 # define SOCK_CONNECTION_QUEUE 42
-# define REQUEST_BUFF 1024
+# define REQUEST_BUFF 2
 
 typedef struct		s_cmd {
-	char			buff[REQUEST_BUFF];
+	char			buff[REQUEST_BUFF + 1];
 }					t_cmd;
 
 typedef struct		s_srv {
@@ -43,5 +43,8 @@ t_srv				*get_srv(t_srv *srv, int i);
 t_clt				*get_clt(t_clt *clt, int i);
 void				signal_handler_srv(int s);
 void				signal_handler_clt(int s);
+
+void				exit_socket(char *message, int ret, int sock);
+
 
 #endif

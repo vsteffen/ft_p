@@ -1,8 +1,8 @@
 #include "ft_p.h"
 
-void	exit_message_and_fd(char *message, int ret, int fd)
+void	exit_socket(char *message, int ret, int sock)
 {
-	close(fd);
+	close(sock);
 	exit_message(message, ret);
 }
 
@@ -23,9 +23,9 @@ void	handle_connection_srv(t_srv *srv)
 				if ((rcv_length = recv(srv->cs, srv->cmd.buff, REQUEST_BUFF, 0)) <= 0)
 				{
 					if (rcv_length == 0)
-						exit_message_and_fd("Connection close by client", 1, srv->sock);
+						exit_socket("Connection close by client", 1, srv->sock);
 					else
-						exit_message_and_fd("Error while receving data from client", 1, srv->sock);
+						exit_socket("Error while receving data from client", 1, srv->sock);
 				}
 				srv->cmd.buff[rcv_length] = '\0';
 				ft_printf("Receive: [%s]\n", srv->cmd.buff);
@@ -38,7 +38,7 @@ void	handle_connection_srv(t_srv *srv)
 				else
 				{
 					if (send(srv->cs, srv->cmd.buff, ft_strlen(srv->cmd.buff), 0) == -1)
-						exit_message_and_fd("Error while sending user input", 1, srv->cs);
+						exit_socket("Error while sending user input", 1, srv->cs);
 				}
 			}
 		}
