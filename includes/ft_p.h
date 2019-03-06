@@ -10,19 +10,15 @@
 # define BIN_SRV "serveur"
 # define BIN_CLT "client"
 # define SOCK_CONNECTION_QUEUE 42
-# define REQUEST_BUFF 8192
-
-typedef struct		s_cmd {
-	char			buff[REQUEST_BUFF + 1];
-}					t_cmd;
+# define RSP_BUFF 8192
 
 typedef struct		s_srv {
 	int 				sock;
 	uint16_t			port;
 	socklen_t			cs;
 	struct sockaddr_in	csin;
-	struct s_cmd		cmd;
 	pid_t				pid;
+	char				rsp_buff[RSP_BUFF];
 }					t_srv;
 
 typedef struct		s_clt {
@@ -31,7 +27,7 @@ typedef struct		s_clt {
 	uint16_t			port;
 	socklen_t			cs;
 	struct sockaddr_in	csin;
-	struct s_cmd		cmd;
+	char				rsp_buff[RSP_BUFF];
 }					t_clt;
 
 
@@ -45,6 +41,8 @@ void				signal_handler_srv(int s);
 void				signal_handler_clt(int s);
 
 void				exit_socket(char *message, int ret, int sock);
+
+int					get_response(t_clt *clt, char *response);
 
 
 #endif

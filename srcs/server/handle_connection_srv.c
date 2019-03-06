@@ -20,16 +20,16 @@ void	handle_connection_srv(t_srv *srv)
 			srv->pid = 1;
 			while (42)
 			{
-				if ((rcv_length = recv(srv->cs, srv->cmd.buff, REQUEST_BUFF, 0)) <= 0)
+				if ((rcv_length = recv(srv->cs, srv->rsp_buff, RSP_BUFF, 0)) <= 0)
 				{
 					if (rcv_length == 0)
 						exit_socket("Connection close by client", 1, srv->sock);
 					else
 						exit_socket("Error while receving data from client", 1, srv->sock);
 				}
-				srv->cmd.buff[rcv_length] = '\0';
-				ft_printf("Receive: [%s]\n", srv->cmd.buff);
-				if (ft_strcmp("bye", srv->cmd.buff) == 0 || ft_strcmp("close", srv->cmd.buff) == 0)
+				srv->rsp_buff[rcv_length] = '\0';
+				ft_printf("Receive: [%s]\n", srv->rsp_buff);
+				if (ft_strcmp("bye", srv->rsp_buff) == 0 || ft_strcmp("close", srv->rsp_buff) == 0)
 				{
 					ft_printf(BIN_SRV": Disconnected from ftp client [%s:%d]\n", inet_ntoa(srv->csin.sin_addr), ntohs(srv->csin.sin_port));
 					close(srv->cs);
@@ -37,7 +37,7 @@ void	handle_connection_srv(t_srv *srv)
 				}
 				else
 				{
-					if (send(srv->cs, srv->cmd.buff, ft_strlen(srv->cmd.buff), 0) == -1)
+					if (send(srv->cs, srv->rsp_buff, ft_strlen(srv->rsp_buff), 0) == -1)
 						exit_socket("Error while sending user input", 1, srv->cs);
 				}
 			}
