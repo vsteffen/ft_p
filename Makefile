@@ -44,11 +44,11 @@ CLTPATH	=	/client
 LPATH	=	$(LIBFT)/libft.a
 HPATH 	=	-I $(ROOT)/includes -I $(LIBFT)/includes
 
-SRC_SRV	=	$(SRVPATH)/server.c \
+SRC_SRV	=	$(SRVPATH)/main.c \
 			$(SRVPATH)/handle_connection_srv.c \
 			$(SRVPATH)/signals_srv.c
 
-SRC_CLT	=	$(CLTPATH)/client.c \
+SRC_CLT	=	$(CLTPATH)/main.c \
 			$(CLTPATH)/handle_connection_clt.c \
 			$(CLTPATH)/signals_clt.c
 

@@ -13,7 +13,7 @@ void	handle_connection_srv(t_srv *srv)
 	while (42)
 	{
 		if ((srv->cs = accept(srv->sock, (struct sockaddr*)&srv->csin, &srv->cs)) == (socklen_t)-1)
-			exit_message("Fail to accept connection on socket", 4);
+			exit_message("Failed to accept connection on socket", 4);
 		ft_printf(BIN_SRV": Connection accepted from %s:%d\n", inet_ntoa(srv->csin.sin_addr), ntohs(srv->csin.sin_port));
 		if (fork() == 0)
 		{

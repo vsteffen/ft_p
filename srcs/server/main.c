@@ -31,15 +31,15 @@ int		create_server(uint16_t port)
 	struct sockaddr_in	sin;
 
 	if ((proto = getprotobyname("tcp")) == 0)
-		exit_message("Fail to get protocol requested", 1);
+		exit_message("Failed to get protocol requested", 1);
 	sock = socket(PF_INET, SOCK_STREAM, proto->p_proto);
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (bind(sock, (const struct sockaddr *)&sin, sizeof(sin)) == -1)
-		exit_message("Fail to bind socket", 2);
+		exit_message("Failed to bind socket", 2);
 	if (listen(sock, SOCK_CONNECTION_QUEUE) == -1)
-		exit_message("Fail to listen socket", 3);
+		exit_message("Failed to listen socket", 3);
 	return (sock);
 }
 

@@ -53,7 +53,7 @@ int		main(int ac, char **av)
 	clt.port = (uint16_t)ft_atoi(av[2]);
 	clt.addr = av[1];
 	clt.sock = create_client(clt.addr, clt.port);
-	ft_printf("Connected on ftp server [%s:%s]\n", av[1], av[2]);
+	ft_printf(BIN_CLT": Connected on ftp server [%s:%s]\n", av[1], av[2]);
 	get_clt(&clt, 1);
 	handle_connection_clt(&clt);
 	close(clt.sock);

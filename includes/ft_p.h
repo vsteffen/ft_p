@@ -10,7 +10,7 @@
 # define BIN_SRV "serveur"
 # define BIN_CLT "client"
 # define SOCK_CONNECTION_QUEUE 42
-# define REQUEST_BUFF 2
+# define REQUEST_BUFF 8192
 
 typedef struct		s_cmd {
 	char			buff[REQUEST_BUFF + 1];
