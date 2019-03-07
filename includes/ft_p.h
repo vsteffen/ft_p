@@ -6,6 +6,9 @@
 # include <netdb.h>
 # include <arpa/inet.h>
 # include <signal.h>
+# include <stdio.h>
+# include <curses.h>
+# include <termios.h>
 
 # define BIN_SRV "serveur"
 # define BIN_CLT "client"
@@ -28,6 +31,8 @@ typedef struct		s_clt {
 	socklen_t			cs;
 	struct sockaddr_in	csin;
 	char				rsp_buff[RSP_BUFF];
+	struct termios		old_termios;
+	int8_t				old_termios_set;
 }					t_clt;
 
 

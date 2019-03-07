@@ -20,6 +20,8 @@ void		signal_handler_clt(int s)
 	{
 		clt = get_clt(NULL, 0);
 		close(clt->sock);
+		if (clt->old_termios_set == 1)
+			tcsetattr(0, TCSAFLUSH, &clt->old_termios);
 		ft_printf("\nClient stopped\n");
 		exit(0);
 	}

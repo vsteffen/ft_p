@@ -55,6 +55,8 @@ int		main(int ac, char **av)
 	clt.sock = create_client(clt.addr, clt.port);
 	ft_printf(BIN_CLT": Connected on ftp server [%s:%s]\n", av[1], av[2]);
 	get_clt(&clt, 1);
+	signal(SIGINT, signal_handler_clt);
+	clt.old_termios_set = 0;
 	handle_connection_clt(&clt);
 	close(clt.sock);
 	return (0);
