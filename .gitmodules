@@ -1,3 +1,4 @@
 [submodule "libsrcs/libft"]
 	path = libsrcs/libft
 	url = https://github.com/vsteffen/libft.git
+	ignore = dirty
