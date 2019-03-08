@@ -30,7 +30,7 @@ OBJ_CLT	=	$(patsubst %.c, $(OPATH)/%.o, $(SRC_CLT))
 
 OBJ = $(OBJ_SRV) $(OBJ_CLT)
 
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -Wextra -g -fsanitize=address
 
 LIB		=	$(ROOT)/lib
 LIBSRCS	=	$(ROOT)/libsrcs
@@ -90,7 +90,7 @@ pre-check-submodule:
 
 pre-check-lib: pre-check-submodule
 	@echo $(PROJECT)": Compile and verify libraries ... "
-	$(if $(filter $(UNAME_S),Darwin),@$(MAKE) -C $(LIBFT) > /dev/null,@$(MAKE) no-asm -C $(LIBFT) > /dev/null)
+	$(if $(filter $(UNAME_S),Darwin),@$(MAKE) -C $(LIBFT) -j4 > /dev/null,@$(MAKE) no-asm -C $(LIBFT) > /dev/null)
 	@printf $(PROJECT)": pre-check-lib rule "
 	@$(call PRINT_STATUS,UP-TO-DATE,SUCCESS)
 
