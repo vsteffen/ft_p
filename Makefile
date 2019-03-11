@@ -50,7 +50,8 @@ SRC_SRV	=	$(SRVPATH)/main.c \
 
 SRC_CLT	=	$(CLTPATH)/main.c \
 			$(CLTPATH)/handle_connection_clt.c \
-			$(CLTPATH)/signals_clt.c
+			$(CLTPATH)/signals_clt.c \
+			$(CLTPATH)/handle_cmd.c
 
 SRC	=	$(SRC_SRV) $(SRC_CLT)
 

@@ -1,8 +1,15 @@
 #include "ft_p.h"
 
 struct s_cmd	g_cmd[] = {
-	{"LS", 2, handle_list},
-	{"LOGIN", 5, init_connection},
+	{"LS", 3, handle_list},
+	{"LS ", 3, handle_list},
+	{"LOGIN", 6, handle_auth},
+	{"LOGIN ", 6, handle_auth},
+	{"QUIT", 5, handle_quit},
+	{"CD ", 3, handle_cd},
+	{"PWD", 4, handle_pwd},
+	{"GET ", 4, handle_get},
+	{"PUT ", 4, handle_put},
 	{NULL, 0, NULL},
 };
 
@@ -50,13 +57,16 @@ int		create_pasv(struct s_clt *clt)
 
 	send_data(clt, "PASV", NULL);
 	if (get_response(clt, clt->rsp_buff) != 227)
+	{
+		printf("%s\n", clt->rsp_buff);
 		return (-1);
-	first_char = ft_strchr(clt->rsp_buff, '(');
-	end_char = ft_strchr(clt->rsp_buff, ')');
+	}
+	first_char = ft_strrchr(clt->rsp_buff, '(');
+	end_char = ft_strrchr(clt->rsp_buff, ')');
 	if (!first_char || !end_char)
 		return (-1);
 	infos = ft_strsub(clt->rsp_buff, first_char - clt->rsp_buff + 1,
-		ft_strchr(clt->rsp_buff, ')') - first_char - 1);
+		end_char - first_char - 1);
 	split = ft_strsplit(infos, ',');
 	if (!split || !split[0] || !split[1] || !split[2]
 		|| !split[3] || !split[4] || !split[5] || split[6])
@@ -66,34 +76,8 @@ int		create_pasv(struct s_clt *clt)
 	free_split(split);
 	port = create_client(infos, port);
 	free(infos);
+	printf("la\n");
 	return (port);
-}
-
-
-
-void	handle_list(struct s_clt *clt, char *input)
-{
-	int			sock;
-	ssize_t		rcv_length;
-	char		buff[RSP_BUFF + 1];
-
-	if (*input != ' ' && *input)
-		return ;
-	if ((sock = create_pasv(clt)) == -1)
-		return ;
-	send_data(clt, "LIST", *input == 0 ? NULL : input);
-	get_response(clt, clt->rsp_buff);
-	while ((rcv_length = read(sock, buff, RSP_BUFF)) > 0)
-	{
-		buff[rcv_length] = '\0';
-		ft_printf("%s", buff);
-	}
-	// while ((rcv_length = recv(sock, buff, RSP_BUFF, 0)) > 0)
-	// {
-	// 	buff[rcv_length] = '\0';
-	// 	ft_printf("%s", buff);
-	// }
-	close(sock);
 }
 
 void	exit_socket(char *message, int ret, int socket)
@@ -105,19 +89,44 @@ void	exit_socket(char *message, int ret, int socket)
 int		get_response(t_clt *clt, char *response)
 {
 	ssize_t		rcv_length;
+	int			ret;
+	int			len;
+	static char	*next = NULL;
 
-	if ((rcv_length = recv(clt->sock, response, RSP_BUFF, 0)) <= 0)
+	next = next ? next : response; 
+	if (next == response || !*next)
 	{
-		if (rcv_length == 0)
-			exit_socket("Connection close by ftp sever", 1, clt->sock);
-		else
-			exit_socket("Error while receving data from ftp sever", 1, clt->sock);
+		if ((rcv_length = recv(clt->sock, response, RSP_BUFF, 0)) <= 0)
+		{
+			if (rcv_length == 0)
+				exit_socket("Connection close by ftp sever", 1, clt->sock);
+			else
+				exit_socket("Error while receving data from ftp sever", 1,
+					clt->sock);
+		}
+		response[rcv_length] = '\0';
 	}
-	response[rcv_length] = '\0';
-	ft_putstr(response);
-	if (response[0] == '1')
-		return (get_response(clt, response));
-	return (ft_atoi(response));
+	else
+		ft_strcpy(response , next);
+	next = ft_strchr(response, '\n') + 1;
+	if (next && *next)
+	{
+		len = next - response;
+		while (next[1] == '\n' || next[0] == '\n')
+			next = ft_strchr(next, '\n') + 1;
+	}
+	else
+	{
+		len = ft_strlen(response);
+		next = NULL;
+	}
+	ret = ft_atoi(response);
+	if (response[0] == '2' || response[0] == '3')
+		ft_printf("%{FG_GREEN}SUCESS%{FG_DEFAULT} : ");
+	else if (response[0] == '4' || response[0] == '5')
+		ft_printf("%{FG_RED}ERROR%{FG_DEFAULT} : ");
+	write(1, response, len);
+	return (ret);
 }
 
 void	recv_server(t_clt *clt)
@@ -132,28 +141,6 @@ void	recv_server(t_clt *clt)
 			exit_socket("Error while receving data from ftp sever", 1, clt->sock);
 	}
 	clt->rsp_buff[rcv_length] = '\0';
-}
-
-char	*prompt_pass(t_clt *clt)
-{
-	struct termios	new_termios;
-	char			*pass;
-	int				ret_gnl;
-
-	if (tcgetattr (0, &clt->old_termios) != 0)
-		clt->old_termios_set = 1;
-	new_termios = clt->old_termios;
-	new_termios.c_lflag &= ~ECHO;
-	tcsetattr (0, TCSAFLUSH, &new_termios);
-	if ((ret_gnl = get_next_line(0, &pass)) == -1)
-	{
-		if (clt->old_termios_set == 1)
-			tcsetattr(0, TCSAFLUSH, &clt->old_termios);
-		exit_socket("Failed to read on stdin", 1, clt->sock);
-	}
-	tcsetattr(0, TCSAFLUSH, &clt->old_termios);
-	clt->old_termios_set = 0;
-	return (pass);
 }
 
 void	send_data(t_clt *clt, char *cmd, char *param)
@@ -177,36 +164,6 @@ void	send_data(t_clt *clt, char *cmd, char *param)
 	free(request);
 }
 
-void	init_connection(t_clt *clt, char *input)
-{
-	char		*pass;
-	char		*user;
-	int			ret_gnl;
-
-	if (input && *input == ' ')
-		user = ft_strdup(input + 1);
-	else
-	{
-		ft_printf("User: ");
-		if ((ret_gnl = get_next_line(0, &user)) == -1)
-			exit_socket("Error while reading user input", 1, clt->sock);
-		else if (ret_gnl == 0)
-		{
-			ft_printf("EOF received; login aborted.\n");
-			return ;
-		}
-	}
-	send_data(clt, "USER ", user);
-	free(user);
-	if (get_response(clt, clt->rsp_buff) < 400)
-		ft_printf("Pass: ");
-	pass = prompt_pass(clt);
-	write(1, "\n", 1);
-	send_data(clt, "PASS ", pass);
-	free(pass);
-	get_response(clt, clt->rsp_buff);
-}
-
 void	parse_cmd(char *input, t_clt *clt)
 {
 	size_t		len_input;
@@ -221,17 +178,17 @@ void	parse_cmd(char *input, t_clt *clt)
 	{
 		if (!ft_strncmp(g_cmd[i].key, tmp, g_cmd[i].len_key))
 		{
-			g_cmd[i].f(clt, input + g_cmd[i].len_key);
+			g_cmd[i].f(clt, input + g_cmd[i].len_key - 1);
 			break ;
 		}
 		i++;
 	}
+	if (!g_cmd[i].key)
+	{
+		if (*input != '\0')
+			ft_printf("%s: Unkown command.\n", input);
+	}
 	free(tmp);
-	// if (send(clt->sock, input, len_input + 1, 0) == -1)
-	// 	exit_socket("Error while sending user input", 1, clt->sock);
-	// if (ft_strcmp("bye", input) == 0 || ft_strcmp("close", input) == 0)
-	// 	exit_socket("End of connection", 1, clt->sock);
-	// get_response(clt, clt->rsp_buff);
 	free(input);
 	ft_printf(BIN_CLT"> ");
 }
@@ -243,7 +200,7 @@ void	handle_connection_clt(t_clt *clt)
 
 	if (get_response(clt, clt->rsp_buff) != 220)
 		exit_socket("Server failed to connect", 1, clt->sock);
-	init_connection(clt, NULL);
+	handle_auth(clt, NULL);
 	ft_printf(BIN_CLT"> ");
 	while (42)
 	{
@@ -252,11 +209,7 @@ void	handle_connection_clt(t_clt *clt)
 		if (ret_gnl != 0)
 			parse_cmd(input, clt);
 		else
-		{
-			send_data(clt, "QUIT", NULL);
-			write(1, "\n", 1);
-			get_response(clt, clt->rsp_buff);
-			exit_socket("Bye !", 1, clt->sock);
-		}
+			handle_quit(clt, NULL);
+
 	}
 }

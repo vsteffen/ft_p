@@ -1,4 +1,11 @@
 # Project
+/*
+!Makefile
+!includes
+!libsrcs
+!auteur
+!srcs
+!.*
 /ft_p
 /client
 /serveur

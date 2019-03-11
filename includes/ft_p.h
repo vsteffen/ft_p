@@ -9,6 +9,7 @@
 # include <stdio.h>
 # include <curses.h>
 # include <termios.h>
+# include <fcntl.h>
 
 # define BIN_SRV "serveur"
 # define BIN_CLT "client"
@@ -58,7 +59,14 @@ void				exit_socket(char *message, int ret, int sock);
 void				send_data(t_clt *clt, char *cmd, char *param);
 
 int					get_response(t_clt *clt, char *response);
-void				init_connection(t_clt *clt, char *input);
+int					create_pasv(struct s_clt *clt);
+
+void				handle_auth(t_clt *clt, char *input);
 void				handle_list(struct s_clt *clt, char *input);
+void				handle_quit(t_clt *clt, char *input);
+void				handle_cd(struct s_clt *clt, char *input);
+void				handle_pwd(struct s_clt *clt, char *input);
+void				handle_get(struct s_clt *clt, char *input);
+void				handle_put(struct s_clt *clt, char *input);
 
 #endif
