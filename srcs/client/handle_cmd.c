@@ -1,11 +1,10 @@
-#include "ft_p.h"
+#include <clt.h>
 
 void	handle_list(struct s_clt *clt, char *input)
 {
 	int			sock;
 	ssize_t		rcv_length;
 	char		buff[RSP_BUFF + 1];
-	int			ret;
 
 	if (*input != ' ' && *input)
 		return ;

@@ -1,4 +1,4 @@
-#include "ft_p.h"
+#include <clt.h>
 
 struct s_cmd	g_cmd[] = {
 	{"LS", 3, handle_list},
@@ -109,7 +109,7 @@ int		get_response(t_clt *clt, char *response)
 	else
 		ft_strcpy(response , next);
 	next = ft_strchr(response, '\n') + 1;
-	if (next && *next)
+	if (next - 1 && *next)
 	{
 		len = next - response;
 		while (next[1] == '\n' || next[0] == '\n')

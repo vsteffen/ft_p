@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
+#include <srv.h>
 
 void	usage(char *prog)
 {
@@ -52,6 +52,7 @@ int		main(int ac, char **av)
 	if (ac != 2)
 		usage(av[0]);
 	srv.sock = create_server((uint16_t)ft_atoi(av[1]));
+	srv.auth = 0;
 	tmp_slen = sizeof(tmp_sin);
 	getsockname(srv.sock, (struct sockaddr *)&tmp_sin, &tmp_slen);
 	srv.port = ntohs(tmp_sin.sin_port);
@@ -59,7 +60,7 @@ int		main(int ac, char **av)
 	srv.pid = 0;
 	get_srv(&srv, 1);
 	signal(SIGINT, signal_handler_srv);
-	handle_connection_srv(&srv);
+	handle_all_connection_srv(&srv);
 	close(srv.cs);
 	return (0);
 }

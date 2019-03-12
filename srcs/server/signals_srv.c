@@ -1,5 +1,5 @@
 
-#include "ft_p.h"
+#include <srv.h>
 
 t_srv	*get_srv(t_srv *srv, int i)
 {

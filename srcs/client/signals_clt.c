@@ -1,5 +1,5 @@
 
-#include "ft_p.h"
+#include <clt.h>
 
 t_clt	*get_clt(t_clt *clt, int i)
 {

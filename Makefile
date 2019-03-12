@@ -45,8 +45,9 @@ LPATH	=	$(LIBFT)/libft.a
 HPATH 	=	-I $(ROOT)/includes -I $(LIBFT)/includes
 
 SRC_SRV	=	$(SRVPATH)/main.c \
-			$(SRVPATH)/handle_connection_srv.c \
-			$(SRVPATH)/signals_srv.c
+			$(SRVPATH)/handle_all_connection_srv.c \
+			$(SRVPATH)/signals_srv.c \
+			$(SRVPATH)/handle_request.c
 
 SRC_CLT	=	$(CLTPATH)/main.c \
 			$(CLTPATH)/handle_connection_clt.c \
