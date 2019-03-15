@@ -28,7 +28,7 @@ void	handle_request(t_srv *srv, char *request)
 		if (!ft_strncmp(g_cmd[i].key, tmp, g_cmd[i].len_key))
 		{
 			if (!g_cmd[i].auth || (g_cmd[i].auth && srv->auth))
-				g_cmd[i].f(srv, request + g_cmd[i].len_key - 1);
+				g_cmd[i].f(srv, request + g_cmd[i].len_key);
 			else
 				send(srv->cs, "530 Please login with USER and PASS.\n", 37, 0);
 			break ;
@@ -60,19 +60,46 @@ void	handle_list(struct s_srv *srv, char *input)
 
 void	handle_user(t_srv *srv, char *input)
 {
-	ft_printf("USER\n");
-	(void)srv;
-	(void)input;
+	char	*tmp;
+
 	send(srv->cs, "331 Password required for admin.\n", 33, 0);
+	if (!(tmp = ft_strrchr(input, '\n')))
+	{
+		send(srv->cs, "500 : command not understood.\n", 30, 0);
+		return ;
+	}
+	tmp[0] = '\0';
+	srv->id_user = search_user(srv, input);
+	ft_printf("Id found = [%zu]\n", srv->id_user);
 }
 
 void	handle_pass(t_srv *srv, char *input)
 {
-	ft_printf("PASS\n");
-	(void)srv;
-	(void)input;
-	send(srv->cs, "230 User admin logged in.\n", 26, 0);
-	// srv->auth = 1;
+	char	*response_tmp;
+	char	*tmp;
+
+	if (!(tmp = ft_strrchr(input, '\n')))
+	{
+		send(srv->cs, "530 Login incorrect.\n", 21, 0);
+		return ;
+	}
+	tmp[0] = '\0';
+	if (srv->id_user == -1u || srv->id_user > SOCK_CONNECTION_QUEUE)
+		send(srv->cs, "500 : command not understood.\n", 30, 0);
+	else if (check_passwd(srv, input))
+	{
+		response_tmp = malloc(ft_strlen(srv->user[srv->id_user][0]) + 22);
+		ft_strcpy(response_tmp, "230 User ");
+		ft_strcat(response_tmp, srv->user[srv->id_user][0]);
+		ft_strcat(response_tmp, " logged in.\n");
+		send(srv->cs, response_tmp, ft_strlen(srv->user[srv->id_user][0]) + 21, 0);
+		free(response_tmp);
+		srv->auth = 1;
+		return ;
+	}
+	else
+		send(srv->cs, "530 Login incorrect.\n", 21, 0);
+	srv->auth = 0;
 }
 
 void	handle_cwd(struct s_srv *srv, char *input)

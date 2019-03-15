@@ -35,19 +35,21 @@ CFLAGS = -Wall -Wextra -g -fsanitize=address
 LIB		=	$(ROOT)/lib
 LIBSRCS	=	$(ROOT)/libsrcs
 LIBFT 	=	$(LIBSRCS)/libft
+MD5 	=	$(LIBSRCS)/md5
 
 ROOT  	=	$(shell /bin/pwd)
 OPATH 	=	$(ROOT)/objs
 CPATH 	=	$(ROOT)/srcs
 SRVPATH	=	/server
 CLTPATH	=	/client
-LPATH	=	$(LIBFT)/libft.a
+LPATH	=	$(LIBFT)/libft.a $(MD5)/md5.a
 HPATH 	=	-I $(ROOT)/includes -I $(LIBFT)/includes
 
 SRC_SRV	=	$(SRVPATH)/main.c \
 			$(SRVPATH)/handle_all_connection_srv.c \
 			$(SRVPATH)/signals_srv.c \
-			$(SRVPATH)/handle_request.c
+			$(SRVPATH)/handle_request.c \
+			$(SRVPATH)/auth.c
 
 SRC_CLT	=	$(CLTPATH)/main.c \
 			$(CLTPATH)/handle_connection_clt.c \
@@ -94,6 +96,7 @@ pre-check-lib: pre-check-submodule
 	@echo $(PROJECT)": Compile and verify libraries ... "
 	$(if $(filter $(UNAME_S),Darwin),@$(MAKE) -C $(LIBFT) -j4 > /dev/null,@$(MAKE) no-asm -C $(LIBFT) > /dev/null)
 	@printf $(PROJECT)": pre-check-lib rule "
+	@make -C $(MD5)
 	@$(call PRINT_STATUS,UP-TO-DATE,SUCCESS)
 
 $(NAME): pre-check-submodule pre-check-lib $(OPATH) $(OBJ)

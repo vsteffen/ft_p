@@ -70,10 +70,12 @@ void	handle_auth(t_clt *clt, char *input)
 	write(1, "\n", 1);
 	send_data(clt, "PASS ", pass);
 	free(pass);
-	get_response(clt, clt->rsp_buff);
-	send_data(clt, "TYPE", " I");
-	if (get_response(clt, clt->rsp_buff) >= 300)
-		ft_printf("Error binary mode\n");
+	if (get_response(clt, clt->rsp_buff) < 300) 
+	{
+		send_data(clt, "TYPE", " I");
+		if (get_response(clt, clt->rsp_buff) >= 300)
+			ft_printf("Error binary mode\n");
+	}
 }
 
 void	handle_cd(struct s_clt *clt, char *input)

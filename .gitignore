@@ -5,6 +5,7 @@
 !libsrcs
 !auteur
 !srcs
+!users.conf
 !.*
 /ft_p
 /client

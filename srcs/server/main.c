@@ -24,6 +24,43 @@ void	exit_message(char *message, uint8_t ret)
 	exit(ret);
 }
 
+char	*get_path(char *av_0, char *file)
+{
+	char	*tmp;
+	char	*ret;
+
+	if (!av_0)
+		exit_message("Can't find program location", 1);
+	tmp = ft_strrchr(av_0, '/');
+	if (tmp)
+		*(tmp + 1) = '\0';
+	else if (tmp)
+		av_0 = "./";
+	ret = malloc(ft_strlen(av_0) + ft_strlen(file) + 1);
+	ret = ft_strcpy(ret, av_0);
+	ret = ft_strcat(ret, file);
+	return (ret);
+}
+
+void	init_document_directory(t_srv *srv, char *av_0)
+{
+	DIR *		dir;
+
+	srv->docs = get_path(av_0, SRV_DOCS);  // Must free it
+	mkdir(srv->docs, 0755);
+	if ((dir = opendir(srv->docs)) == NULL)
+	{
+		free(srv->docs);
+		exit_message("Failed to create docs folder", 0);
+	}
+	if (closedir(dir) == -1)
+	{
+		free(srv->docs);
+		free(dir);
+		exit_message("Can't close "SRV_DOCS" directory", 1);
+	}
+}
+
 int		create_server(uint16_t port)
 {
 	int					sock;
@@ -51,6 +88,9 @@ int		main(int ac, char **av)
 
 	if (ac != 2)
 		usage(av[0]);
+	init_document_directory(&srv, av[0]);
+	init_users(av[0], &srv);
+	ft_printf("first user = [%s] / mdp = [%s]\n", srv.user[0][0],  srv.user[0][1]);
 	srv.sock = create_server((uint16_t)ft_atoi(av[1]));
 	srv.auth = 0;
 	tmp_slen = sizeof(tmp_sin);
@@ -60,6 +100,7 @@ int		main(int ac, char **av)
 	srv.pid = 0;
 	get_srv(&srv, 1);
 	signal(SIGINT, signal_handler_srv);
+
 	handle_all_connection_srv(&srv);
 	close(srv.cs);
 	return (0);

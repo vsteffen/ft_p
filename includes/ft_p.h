@@ -10,6 +10,8 @@
 # include <curses.h>
 # include <termios.h>
 # include <fcntl.h>
+# include <sys/stat.h>
+# include <dirent.h>
 
 # define SOCK_CONNECTION_QUEUE 42
 # define RSP_BUFF 8192
