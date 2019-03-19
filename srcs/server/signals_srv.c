@@ -22,6 +22,8 @@ void		signal_handler_srv(int s)
 		if (srv->pid == 0)
 		{
 			close(srv->sock);
+			if (srv->sock_pasv != -1)
+				close(srv->sock_pasv);
 			ft_printf("\nServer stopped\n");
 			exit(0);
 		}

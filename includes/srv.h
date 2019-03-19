@@ -18,6 +18,7 @@ typedef struct		s_srv {
 	int8_t				auth;
 	char				*user[SOCK_CONNECTION_QUEUE + 1][2];
 	char				*docs; // Must free it
+	int					sock_pasv;
 }					t_srv;
 
 typedef void	(t_func_cmd)(t_srv *srv, char *args);
@@ -62,5 +63,7 @@ void				handle_pass(t_srv *srv, char *input);
 void				handle_pasv(struct s_srv *srv, char *input);
 void				handle_type(struct s_srv *srv, char *input);
 void				handle_quit(t_srv *srv, char *input);
+
+int					create_server(uint16_t port, int cient_nbr);
 
 #endif

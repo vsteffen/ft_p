@@ -11,9 +11,9 @@
 # **************************************************************************** #
 
 PROJECT	=	ft_p
-NAME	=	ft_p
 BIN_SRV	=	serveur
 BIN_CLT	=	client
+NAME	=	$(BIN_SRV) $(BIN_CLT)
 
 CC 		=	/usr/bin/clang
 RM 		=	/bin/rm
@@ -58,7 +58,21 @@ SRC_CLT	=	$(CLTPATH)/main.c \
 
 SRC	=	$(SRC_SRV) $(SRC_CLT)
 
+PRE_CHECK_SUB_LIBFT	=	$(LIBFT)/Makefile
+PRE_CHECK_SUB	=	$(PRE_CHECK_SUB_LIBFT)
+PRE_CHECK_LIB_LIBFT	=	$(LIBFT)/libft.a
+PRE_CHECK_LIB_MD5	=	$(MD5)/md5.a
+PRE_CHECK_LIB	=	$(PRE_CHECK_LIB_LIBFT)
+
 COMPILE = no
+
+OS		:= $(shell uname -s)
+
+ifeq ($(OS),Darwin)
+	NPROCS:=$(shell sysctl -n hw.ncpu)
+else
+	NPROCS:=$(shell grep -c ^processor /proc/cpuinfo)
+endif
 
 define PRINT_RED
     @printf "\033[31m$(1)\033[0m"
@@ -81,42 +95,43 @@ define PRINT_STATUS
 	$(if $(filter $(3),-n),printf $(1),echo ']')
 endef
 
-.PHONY: all clean fclean re pre-check-submodule pre-check-lib lib-clean
+.PHONY: all clean fclean re lib-clean lib-update
 
 all: $(NAME)
 
-pre-check-submodule:
-	@echo $(PROJECT)": Init and update submodules ... "
+
+$(PRE_CHECK_SUB):
+	@echo $(PROJECT)": Init submodules ... "
 	@$(GIT) submodule init > /dev/null  # can't directly redirect stdout on /dev/null cause of sync wait on Linux
 	@$(GIT) submodule update --recursive --remote > /dev/null
-	@printf $(PROJECT)": pre-check-submodule rule "
-	@$(call PRINT_STATUS,UP-TO-DATE,SUCCESS)
+	@printf $(PROJECT)": submodules "
+	@$(call PRINT_STATUS,INITIALIZED,SUCCESS)
 
-pre-check-lib: pre-check-submodule
-	@echo $(PROJECT)": Compile and verify libraries ... "
-	$(if $(filter $(UNAME_S),Darwin),@$(MAKE) -C $(LIBFT) -j4 > /dev/null,@$(MAKE) no-asm -C $(LIBFT) > /dev/null)
-	@printf $(PROJECT)": pre-check-lib rule "
-	@make -C $(MD5)
-	@$(call PRINT_STATUS,UP-TO-DATE,SUCCESS)
+$(PRE_CHECK_LIB): $(PRE_CHECK_SUB)
+	@echo $(PROJECT)": Compile libraries ... "
+	$(if $(filter $(OS),Darwin),@$(MAKE) -C $(LIBFT) -j$(NPROCS) > /dev/null,@$(MAKE) -C $(LIBFT) no-asm -j$(NPROCS) > /dev/null)
+	@$(MAKE) -C $(MD5) -j$(NPROCS) > /dev/null
+	@printf $(PROJECT)": all libraries "
+	@$(call PRINT_STATUS,COMPILED,SUCCESS)
 
-$(NAME): pre-check-submodule pre-check-lib $(OPATH) $(OBJ)
+$(NAME): $(PRE_CHECK_LIB) $(OPATH) $(OBJ)
 	$(if $(filter $(COMPILE),yes),@echo ']')
-	@printf $(PROJECT)": Building $(BIN_SRV) ... "
+	@echo $(PROJECT)": Building $(BIN_SRV) ... "
 	@$(CC) -o $(BIN_SRV) $(CFLAGS) $(OBJ_SRV) $(LPATH) $(HPATH)
-	@$(call PRINT_STATUS,DONE,SUCCESS)
-	@printf $(PROJECT)": Building $(BIN_CLT) ... "
+	@echo $(PROJECT)": Building $(BIN_CLT) ... "
 	@$(CC) -o $(BIN_CLT) $(CFLAGS) $(OBJ_CLT) $(LPATH) $(HPATH)
+	@printf $(PROJECT)": all binaries "
 	@$(call PRINT_STATUS,DONE,SUCCESS)
 
-$(OPATH)/%.o: $(CPATH)/%.c | pre-check-submodule pre-check-lib
+$(OPATH)/%.o: $(CPATH)/%.c | $(PRE_CHECK_SUB)
 	$(if $(filter $(COMPILE),no),@printf $(PROJECT)': Files compiling [')
 	@$(eval COMPILE := yes)
 	@$(CC) $(CFLAGS) -c $< -o $@ $(HPATH)
 	$(call PRINT_GREEN,.)
 
 $(OPATH):
+	@echo $(PROJECT)": Creation of objects directory"
 	@$(MKDIR) $@ $@$(SRVPATH) $@$(CLTPATH)
-	@echo $(PROJECT)": Directory for objects created"
 
 clean:
 	@$(RM) -Rf $(OPATH)
@@ -130,10 +145,18 @@ fclean: clean
 	@printf $(PROJECT)": fclean rule "
 	@$(call PRINT_STATUS,DONE,SUCCESS)
 
-re: fclean all
+re: fclean
+	@$(MAKE) -C $(ROOT) -j$(NPROCS)
 
 lib-clean:
-	@-$(MAKE) fclean -C $(LIBFT) > /dev/null
-	@echo $(PROJECT)": libraries fcleaned"
-	@printf $(PROJECT)": lib-clean rule "
+	@echo $(PROJECT)": cleaning libraries ..."
+	@-$(MAKE) -C $(LIBFT) fclean -j$(NPROCS) > /dev/null
+	@-$(MAKE) -C $(MD5) fclean -j$(NPROCS) > /dev/null
+	@printf $(PROJECT)": $@ rule "
 	@$(call PRINT_STATUS,DONE,SUCCESS)
+
+lib-update:
+	@echo $(PROJECT)": Update submodules ... "
+	@$(GIT) submodule update --recursive --remote > /dev/null
+	@printf $(PROJECT)": submodules "
+	@$(call PRINT_STATUS,UPDATED,SUCCESS)

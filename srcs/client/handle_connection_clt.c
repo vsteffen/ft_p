@@ -76,7 +76,6 @@ int		create_pasv(struct s_clt *clt)
 	free_split(split);
 	port = create_client(infos, port);
 	free(infos);
-	printf("la\n");
 	return (port);
 }
 

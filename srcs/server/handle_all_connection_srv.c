@@ -46,7 +46,6 @@ char	*get_response(t_srv *srv, char *response)
 
 void	handle_connection(t_srv *srv)
 {
-	ssize_t		rcv_length;
 	char		request[RSP_BUFF + 1];
 
 	srv->pid = 1;
