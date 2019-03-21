@@ -94,6 +94,7 @@ int		main(int ac, char **av)
 	srv.sock = create_server((uint16_t)ft_atoi(av[1]), SOCK_CONNECTION_QUEUE);
 	srv.auth = 0;
 	srv.sock_pasv = -1;
+	srv.user_path = ft_strdup(SRV_DOCS);
 	tmp_slen = sizeof(tmp_sin);
 	getsockname(srv.sock, (struct sockaddr *)&tmp_sin, &tmp_slen);
 	srv.port = ntohs(tmp_sin.sin_port);

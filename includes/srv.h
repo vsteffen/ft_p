@@ -3,7 +3,7 @@
 
 # include <ft_p.h>
 # define BIN_SRV "serveur"
-# define SRV_DOCS "docs"
+# define SRV_DOCS "./docs/"
 # define USER_FILE "users.conf"
 
 typedef struct		s_srv {
@@ -18,6 +18,7 @@ typedef struct		s_srv {
 	int8_t				auth;
 	char				*user[SOCK_CONNECTION_QUEUE + 1][2];
 	char				*docs; // Must free it
+	char				*user_path; // Must free it
 	int					sock_pasv;
 }					t_srv;
 

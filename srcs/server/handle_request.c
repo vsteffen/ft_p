@@ -51,15 +51,87 @@ void	handle_request(t_srv *srv, char *request)
 	free(tmp);
 }
 
+size_t	count_depth(char *s)
+{
+	size_t	i;
+	int		depth;
+	int		nb_dot;
+
+	depth = 0;
+	i = 0;
+	while (s[i])
+	{
+		if (s[i] == '/')
+		{
+			i++;
+			nb_dot = depth;
+			if (s[i] == '.')
+				while (s[++i] == '.')
+				{
+					if (depth == 1)
+						return (0);
+					depth--;
+				}
+			if (s[i] != '/' && s[i] != '\0')
+				depth = nb_dot + 1;
+			i--;
+		}
+		i++;
+	}
+	return (depth);
+}
+
+void	sanitize_path(t_srv *srv, char **tab)
+{
+	size_t	i;
+	int		depth;
+	char	*tmp;
+
+	i = 2;
+	while (tab[i])
+	{
+		if (*tab[i] == '/')
+			tmp = ft_strjoin(SRV_DOCS, tab[i]);
+		else
+			tmp = ft_strjoin(srv->user_path, tab[i]);
+		depth = count_depth(tmp);
+		ft_printf("FINAL DEPTH -> [%d]\n", depth);
+		free(tab[i]);
+		if (depth < 1)
+		{
+			free(tmp);
+			tab[i] = ft_strdup(srv->docs);
+		}
+		else
+			tab[i] = tmp;
+		i++;
+	}
+}
+
+void	free_tab(char **tab)
+{
+	size_t	i;
+
+	i = 0;
+	while (tab[i])
+		free(tab[i++]);
+	free(tab);
+}
+
 void	handle_list(struct s_srv *srv, char *input)
 {
 	int					sock;
+	pid_t				child;
 	socklen_t			cs;
 	struct sockaddr_in	csin;
+	int					ret_child;
+	char				**tmp;
+	char				*str;
+	char				*rsp;
 
 	ft_printf("LIST\n");
 	(void)srv;
-	(void)input;
+	input[ft_strlen(input) - 1] = 0;
 	if (srv->sock_pasv == -1)
 	{
 		send(srv->cs, "425 Can't build data connection\n", 32, 0);
@@ -68,12 +140,42 @@ void	handle_list(struct s_srv *srv, char *input)
 	send(srv->cs, "150 Opening BINARY mode data connection for 'file list'.\n", 57, 0);
 	if ((sock = accept(srv->sock_pasv, (struct sockaddr*)&csin, &cs)) == (socklen_t)-1)
 			send(srv->cs, "425 Can't build data connection\n", 32, 0);
-	send(sock, "POULET\n", 7, 0);
-	send(srv->cs, "226 Transfer complete.\n", 23, 0);
+	printf("input = %s\n", input);
+	if ((child = fork()) == 0)
+	{
+		dup2(sock, 1);
+		dup2(sock, 2);
+		if (!(*input))
+			input = ".";
+		str = malloc(8 + ft_strlen(input));
+		ft_strcpy(str, "ls -la ");
+		ft_strcat(str, input);
+		tmp = ft_strsplitwhite(str);
+		sanitize_path(srv, tmp);
+		execv("/bin/ls", tmp);
+		free_tab(tmp);
+		free(str);
+		exit(0);
+	}
+	else
+	{
+		wait4(child, &ret_child, 0, NULL);
+	}
+	if (!ret_child)
+		send(srv->cs, "226 Transfer complete.\n", 23, 0);
+	else
+	{
+		rsp = malloc(ft_strlen(input) + 34);
+		ft_strcpy(rsp, "550 ");
+		ft_strcat(rsp, input);
+		ft_strcat(rsp, ": No such file or directory.\n");
+		send(srv->cs, rsp, ft_strlen(input) + 33, 0);
+		free(rsp);
+	}
 	if (sock != -1)
 		close(sock);
-	close(srv->sock_pasv);
-	srv->sock_pasv = -1;
+	// close(srv->sock_pasv);
+	// srv->sock_pasv = -1;
 }
 
 void	handle_user(t_srv *srv, char *input)
@@ -88,7 +190,6 @@ void	handle_user(t_srv *srv, char *input)
 	}
 	tmp[0] = '\0';
 	srv->id_user = search_user(srv, input);
-	ft_printf("Id found = [%zu]\n", srv->id_user);
 }
 
 void	handle_pass(t_srv *srv, char *input)
@@ -177,6 +278,7 @@ void	handle_pasv(struct s_srv *srv, char *input)
 	if (srv->sock_pasv != -1)
 		close(srv->sock_pasv);
 	srv->sock_pasv = create_server(0, 1);
+	printf("CREATE SERVER -> [%d]\n", srv->sock_pasv);
 	getsockname(srv->sock_pasv, (struct sockaddr *)&tmp_sin, &tmp_slen);
 	ft_strcpy(ret, "227 Entering Passive Mode (127,0,0,1,");
 	ft_printf("PASV: port [%zu] / sock [%d]\n", ntohs(tmp_sin.sin_port), srv->sock_pasv);
