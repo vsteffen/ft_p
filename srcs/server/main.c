@@ -90,7 +90,6 @@ int		main(int ac, char **av)
 		usage(av[0]);
 	init_document_directory(&srv, av[0]);
 	init_users(av[0], &srv);
-	ft_printf("first user = [%s] / mdp = [%s]\n", srv.user[0][0],  srv.user[0][1]);
 	srv.sock = create_server((uint16_t)ft_atoi(av[1]), SOCK_CONNECTION_QUEUE);
 	srv.auth = 0;
 	srv.sock_pasv = -1;

@@ -30,7 +30,7 @@ OBJ_CLT	=	$(patsubst %.c, $(OPATH)/%.o, $(SRC_CLT))
 
 OBJ = $(OBJ_SRV) $(OBJ_CLT)
 
-CFLAGS = -Wall -Wextra -g -fsanitize=address
+CFLAGS = -Wall -Wextra -g #-fsanitize=address
 
 LIB		=	$(ROOT)/lib
 LIBSRCS	=	$(ROOT)/libsrcs

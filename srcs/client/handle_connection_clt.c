@@ -68,6 +68,7 @@ int		create_pasv(struct s_clt *clt)
 	infos = ft_strsub(clt->rsp_buff, first_char - clt->rsp_buff + 1,
 		end_char - first_char - 1);
 	split = ft_strsplit(infos, ',');
+	free(infos);
 	if (!split || !split[0] || !split[1] || !split[2]
 		|| !split[3] || !split[4] || !split[5] || split[6])
 		return (-1);

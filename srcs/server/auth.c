@@ -7,7 +7,6 @@ size_t	search_user(t_srv *srv, char *user)
 	id = 0;
 	while (srv->user[id][0] != NULL)
 	{
-		ft_printf("Pouet -> [%s] / user [%s]\n", srv->user[id][0], user);
 		if (!ft_strcmp(srv->user[id][0], user))
 			return (id);
 		id++;
@@ -50,7 +49,8 @@ void	init_users(char *av_0, t_srv *srv)
 	char	*pass;
 	size_t	id;
 
-	fd = open(get_path(av_0, USER_FILE), O_RDONLY);
+	fd = open((line = get_path(av_0, USER_FILE)), O_RDONLY);
+	free(line);
 	if (fd == -1)
 		exit_message("No "USER_FILE" or can't read it", 1);
 	id = 0;
@@ -63,6 +63,7 @@ void	init_users(char *av_0, t_srv *srv)
 		srv->user[id][0] = line;
 		srv->user[id][1] = pass;
 		id++;
+		// free(line);
 	}
 	srv->user[id][0] = NULL;
 	srv->user[id][1] = NULL;

@@ -39,6 +39,7 @@ int		create_client(char *addr, uint16_t port)
 	if ((he = gethostbyname(addr)) == NULL)
 		exit_message("Failed to resolve hostname", 2);
 	ft_memcpy(&sin.sin_addr, he->h_addr_list[0], he->h_length);
+	ft_printf("port = %zu / sin_port = %zu / htons(sin_port) = %zu \n", port, sin.sin_port, htons(sin.sin_port));
 	if (connect(sock, (const struct sockaddr *)&sin, sizeof(sin)) == -1)
 		exit_message("Failed to connect on socket", 2);
 	return (sock);

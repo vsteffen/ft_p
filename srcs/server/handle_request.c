@@ -12,8 +12,15 @@ struct s_cmd	g_cmd[] = {
 	{"STOR ", 5, handle_stor, 1},
 	{"PASV\n", 5, handle_pasv, 1},
 	{"TYPE I\n", 7, handle_type, 1},
+	{"SYST\n", 5, handle_syst, 1},
 	{NULL, 0, NULL, 0},
 };
+
+void	handle_syst(struct s_srv *srv, char *input)
+{
+	(void)input;
+	send(srv->cs, "215 UNIX Type: L8\n", 18, 0);
+}
 
 void	handle_request(t_srv *srv, char *request)
 {
@@ -22,7 +29,13 @@ void	handle_request(t_srv *srv, char *request)
 	char		*response_tmp;
 
 	i = 0;
+	if (ft_strlen(request) > 2 && request[ft_strlen(request) - 2] == 0xd)
+	{
+		request[ft_strlen(request) - 2] = '\n';
+		request[ft_strlen(request) - 1] = 0;
+	}
 	ft_strtoupper((tmp = ft_strdup(request)));
+	printf("r = %s\n", request);
 	while (g_cmd[i].key)
 	{
 		if (!ft_strncmp(g_cmd[i].key, tmp, g_cmd[i].len_key))
@@ -37,8 +50,10 @@ void	handle_request(t_srv *srv, char *request)
 	}
 	if (!g_cmd[i].key)
 	{
+		ft_printf("la\n");
 		if (*request != '\n')
 		{
+			ft_printf("pas la\n");
 			response_tmp = malloc(ft_strlen(request) + 30);
 			ft_strcpy(response_tmp, "500 ");
 			request[ft_strlen(request) - 1] = 0;
@@ -81,6 +96,52 @@ size_t	count_depth(char *s)
 	return (depth);
 }
 
+char	*clean_path(char *s)
+{
+	uint	i;
+	int		depth;
+	int		tmp_depth;
+	uint	tab_depth[256];
+	uint	curr;
+
+	depth = 0;
+	i = 0;
+	curr = 0;
+	ft_printf("Input to clean [%s]\n", s);
+	while (s[i])
+	{
+		if (s[i] == '/')
+		{
+			printf("add checkpoint at %d of %d\n", curr, i);
+			tab_depth[curr] = i;
+			i++;
+			tmp_depth = depth;
+			if (s[i] == '.')
+				while (s[++i] == '.')
+				{
+					if (depth == 1)
+						return (NULL);
+					depth--;
+				}
+			if (s[i] != '/' && s[i] != '\0')
+				depth = tmp_depth + 1;
+			else
+			{
+				printf("Ici : depth = %d, old = %d\n", depth, tmp_depth);
+				printf("change curr from %d to %d\n", curr, tmp_depth);
+				printf("change i from %d to %d\n", i, tab_depth[curr - (tmp_depth - depth)] + 1);
+				ft_strcpy(s + tab_depth[curr - (tmp_depth - depth)], s + i);
+				i = tab_depth[curr - (tmp_depth - depth)];
+				curr = tmp_depth;
+			}
+			curr++;
+			i--;
+		}
+		i++;
+	}
+	return (s);
+}
+
 void	sanitize_path(t_srv *srv, char **tab)
 {
 	size_t	i;
@@ -91,19 +152,15 @@ void	sanitize_path(t_srv *srv, char **tab)
 	while (tab[i])
 	{
 		if (*tab[i] == '/')
-			tmp = ft_strjoin(SRV_DOCS, tab[i]);
+			tmp = ft_strjoin(SRV_DOCS, tab[i] + 1);
 		else
 			tmp = ft_strjoin(srv->user_path, tab[i]);
-		depth = count_depth(tmp);
-		ft_printf("FINAL DEPTH -> [%d]\n", depth);
+		tmp = clean_path(tmp);
 		free(tab[i]);
-		if (depth < 1)
-		{
-			free(tmp);
-			tab[i] = ft_strdup(srv->docs);
-		}
-		else
+		if (tmp)
 			tab[i] = tmp;
+		else
+			tab[i] = ft_strdup(SRV_DOCS);
 		i++;
 	}
 }
@@ -138,9 +195,8 @@ void	handle_list(struct s_srv *srv, char *input)
 		return ;
 	}
 	send(srv->cs, "150 Opening BINARY mode data connection for 'file list'.\n", 57, 0);
-	if ((sock = accept(srv->sock_pasv, (struct sockaddr*)&csin, &cs)) == (socklen_t)-1)
+	if ((sock = accept(srv->sock_pasv, (struct sockaddr*)&csin, &cs)) == -1)
 			send(srv->cs, "425 Can't build data connection\n", 32, 0);
-	printf("input = %s\n", input);
 	if ((child = fork()) == 0)
 	{
 		dup2(sock, 1);
@@ -223,16 +279,50 @@ void	handle_pass(t_srv *srv, char *input)
 
 void	handle_cwd(struct s_srv *srv, char *input)
 {
+	char		*tmp;
+	char		*tmp2;
+	char		*rsp;
+
 	ft_printf("CWD\n");
-	(void)srv;
-	(void)input;
+	input[ft_strlen(input) - 1] = '\0';
+	if (*input == '/')
+		tmp = ft_strjoin(SRV_DOCS, input + 1);
+	else
+		tmp = ft_strjoin(srv->user_path, input);
+	tmp2 = tmp;
+	if (!(tmp = clean_path(tmp)))
+	{
+		free(tmp2);
+		send(srv->cs, "550 No such file or directory.\n", 31, 0);
+		return ;
+	}
+	if (tmp[ft_strlen(tmp) - 1] != '/')
+	{
+		tmp2 = malloc(ft_strlen(tmp) + 2);
+		ft_strcpy(tmp2, tmp);
+		tmp = tmp2;
+		tmp[ft_strlen(tmp) + 1] = 0;
+		tmp[ft_strlen(tmp)] = '/';
+	}
+	free(srv->user_path);
+	srv->user_path = tmp;
+	send(srv->cs, "250 CWD command successful.\n", 28, 0);
+	ft_printf("After cleaning path -> [%s]\n", srv->user_path);
 }
 
 void	handle_pwd(struct s_srv *srv, char *input)
 {
-	ft_printf("PWD\n");
-	(void)srv;
+	char	*rsp;
+	char	*pwd;
+
 	(void)input;
+	pwd = srv->user_path + ft_strlen(SRV_DOCS) - 1;
+	rsp = malloc(ft_strlen(pwd) + 30);
+	ft_strcpy(rsp, "257 \"");
+	ft_strcat(rsp, pwd);
+	ft_strcat(rsp, "\" is current directory.\n");
+	send(srv->cs, rsp, ft_strlen(pwd) + 29, 0);
+	free(rsp);
 }
 
 void	handle_quit(t_srv *srv, char *input)
@@ -270,7 +360,7 @@ void	convert_port_to_string(uint16_t port, char *buff)
 
 void	handle_pasv(struct s_srv *srv, char *input)
 {
-	char	ret[47];
+	char				ret[47];
 	struct sockaddr_in	tmp_sin;
 	socklen_t			tmp_slen;
 
@@ -278,10 +368,9 @@ void	handle_pasv(struct s_srv *srv, char *input)
 	if (srv->sock_pasv != -1)
 		close(srv->sock_pasv);
 	srv->sock_pasv = create_server(0, 1);
-	printf("CREATE SERVER -> [%d]\n", srv->sock_pasv);
 	getsockname(srv->sock_pasv, (struct sockaddr *)&tmp_sin, &tmp_slen);
+	// ft_printf(tmp_sin.sin_portntohs(tmp_sin.sin_port));
 	ft_strcpy(ret, "227 Entering Passive Mode (127,0,0,1,");
-	ft_printf("PASV: port [%zu] / sock [%d]\n", ntohs(tmp_sin.sin_port), srv->sock_pasv);
 	convert_port_to_string(ntohs(tmp_sin.sin_port), ret + 37);
 	ft_strcat(ret, ")\n");
 	send(srv->cs, ret, ft_strlen(ret), 0);

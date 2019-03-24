@@ -49,7 +49,7 @@ void	handle_connection(t_srv *srv)
 	char		request[RSP_BUFF + 1];
 
 	srv->pid = 1;
-	send(srv->cs, "220 NAS FTP server ready.\n", 26, 0);
+	send(srv->cs, "220 FTP server ready.\n", 22, 0);
 	while (42)
 	{
 		handle_request(srv, get_response(srv, request));

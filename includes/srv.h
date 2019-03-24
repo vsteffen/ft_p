@@ -64,6 +64,7 @@ void				handle_pass(t_srv *srv, char *input);
 void				handle_pasv(struct s_srv *srv, char *input);
 void				handle_type(struct s_srv *srv, char *input);
 void				handle_quit(t_srv *srv, char *input);
+void				handle_syst(struct s_srv *srv, char *input);
 
 int					create_server(uint16_t port, int cient_nbr);
 
