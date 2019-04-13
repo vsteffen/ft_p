@@ -6,7 +6,7 @@
 #    By: vsteffen <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2016/02/06 20:52:05 by vsteffen          #+#    #+#              #
-#    Updated: 2018/03/20 18:17:27 by vsteffen         ###   ########.fr        #
+#    Updated: 2019/04/13 18:36:30 by magouin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -62,7 +62,7 @@ PRE_CHECK_SUB_LIBFT	=	$(LIBFT)/Makefile
 PRE_CHECK_SUB	=	$(PRE_CHECK_SUB_LIBFT)
 PRE_CHECK_LIB_LIBFT	=	$(LIBFT)/libft.a
 PRE_CHECK_LIB_MD5	=	$(MD5)/md5.a
-PRE_CHECK_LIB	=	$(PRE_CHECK_LIB_LIBFT)
+PRE_CHECK_LIB	=	$(PRE_CHECK_LIB_LIBFT) $(PRE_CHECK_LIB_MD5)
 
 COMPILE = no
 
@@ -110,7 +110,7 @@ $(PRE_CHECK_SUB):
 $(PRE_CHECK_LIB): $(PRE_CHECK_SUB)
 	@echo $(PROJECT)": Compile libraries ... "
 	$(if $(filter $(OS),Darwin),@$(MAKE) -C $(LIBFT) -j$(NPROCS) > /dev/null,@$(MAKE) -C $(LIBFT) no-asm -j$(NPROCS) > /dev/null)
-	@$(MAKE) -C $(MD5) -j$(NPROCS) > /dev/null
+	$(MAKE) -C $(MD5) > /dev/null
 	@printf $(PROJECT)": all libraries "
 	@$(call PRINT_STATUS,COMPILED,SUCCESS)
 
