@@ -6,7 +6,7 @@
 #    By: vsteffen <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2016/02/06 20:52:05 by vsteffen          #+#    #+#              #
-#    Updated: 2019/04/13 18:36:30 by magouin          ###   ########.fr        #
+#    Updated: 2019/04/15 16:27:27 by magouin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -146,7 +146,7 @@ fclean: clean
 	@$(call PRINT_STATUS,DONE,SUCCESS)
 
 re: fclean
-	@$(MAKE) -C $(ROOT) -j$(NPROCS)
+	@$(MAKE) -C $(ROOT)
 
 lib-clean:
 	@echo $(PROJECT)": cleaning libraries ..."
