@@ -12,7 +12,7 @@
 
 #include <srv.h>
 
-void	usage(char *prog)
+void	usage(const char *prog)
 {
 	ft_printf("Usage: %s <port>\n", prog);
 	exit(-1);
@@ -24,31 +24,13 @@ void	exit_message(char *message, uint8_t ret)
 	exit(ret);
 }
 
-char	*get_path(char *av_0, char *file)
-{
-	char	*tmp;
-	char	*ret;
-
-	if (!av_0)
-		exit_message("Can't find program location", 1);
-	tmp = ft_strrchr(av_0, '/');
-	if (tmp)
-		*(tmp + 1) = '\0';
-	else if (tmp)
-		av_0 = "./";
-	ret = malloc(ft_strlen(av_0) + ft_strlen(file) + 1);
-	ret = ft_strcpy(ret, av_0);
-	ret = ft_strcat(ret, file);
-	return (ret);
-}
-
-void	init_document_directory(t_srv *srv, char *av_0)
+void	init_document_directory(t_srv *srv, const char *av_0)
 {
 	DIR *		dir;
 
-	srv->docs = get_path(av_0, SRV_DOCS);  // Must free it
-	mkdir(srv->docs, 0755);
-	if ((dir = opendir(srv->docs)) == NULL)
+
+	mkdir(SRV_DOCS, 0755);
+	if ((dir = opendir(SRV_DOCS)) == NULL)
 	{
 		free(srv->docs);
 		exit_message("Failed to create docs folder", 0);
@@ -80,7 +62,7 @@ int		create_server(uint16_t port, int client_nbr)
 	return (sock);
 }
 
-int		main(int ac, char **av)
+int		main(int ac, const char **av)
 {
 	t_srv				srv;
 	struct sockaddr_in	tmp_sin;

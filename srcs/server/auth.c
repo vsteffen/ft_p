@@ -42,15 +42,14 @@ void	free_users(char *users[SOCK_CONNECTION_QUEUE + 1][2])
 	}
 }
 
-void	init_users(char *av_0, t_srv *srv)
+void	init_users(const char *av_0, t_srv *srv)
 {
 	int		fd;
 	char	*line;
 	char	*pass;
 	size_t	id;
 
-	fd = open((line = get_path(av_0, USER_FILE)), O_RDONLY);
-	free(line);
+	fd = open(USER_FILE, O_RDONLY);
 	if (fd == -1)
 		exit_message("No "USER_FILE" or can't read it", 1);
 	id = 0;

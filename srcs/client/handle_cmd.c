@@ -156,23 +156,26 @@ void	handle_put(struct s_clt *clt, char *input)
 	ssize_t		rcv_length;
 	char		buff[RSP_BUFF + 1];
 	int			fd;
-	char		*name;
 
 	if (*input != ' ')
 		return ;
-	name = ft_strrchr(input, '/');
-	name = name ? name + 1 : input + 1;
-	if ((sock = create_pasv(clt)) == -1)
-		return ;
-	send_data(clt, "STOR", *input == 0 ? NULL : input);
-	get_response(clt, clt->rsp_buff);
-	fd = open(name, O_RDONLY);
+	ft_printf("input -> [%s]\n", input + 1);
+	fd = open(input + 1, O_RDONLY);
 	if (fd == -1)
 	{
 		ft_printf("Can't open file\n");
-		close(sock);
-		exit(0);
+		return ;
 	}
+	if ((sock = create_pasv(clt)) == -1)
+		return ;
+	send_data(clt, "STOR", *input == 0 ? NULL : input);
+	if (get_response(clt, clt->rsp_buff) >= 300)
+	{
+		close(fd);
+		close(sock);
+		return ;
+	} 
+	printf("Je balance la sauce ...\n");
 	while ((rcv_length = read(fd, buff, RSP_BUFF)) > 0)
 		send(sock, buff, rcv_length, 0);
 	close(fd);

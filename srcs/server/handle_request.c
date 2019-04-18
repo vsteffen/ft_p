@@ -35,7 +35,7 @@ void	handle_request(t_srv *srv, char *request)
 		request[ft_strlen(request) - 1] = 0;
 	}
 	ft_strtoupper((tmp = ft_strdup(request)));
-	printf("r = %s\n", request);
+	printf("r = [%s]\n", request);
 	while (g_cmd[i].key)
 	{
 		if (!ft_strncmp(g_cmd[i].key, tmp, g_cmd[i].len_key))
@@ -107,12 +107,10 @@ char	*clean_path(char *s)
 	depth = 0;
 	i = 0;
 	curr = 0;
-	ft_printf("Input to clean [%s]\n", s);
 	while (s[i])
 	{
 		if (s[i] == '/')
 		{
-			printf("add checkpoint at %d of %d\n", curr, i);
 			tab_depth[curr] = i;
 			i++;
 			tmp_depth = depth;
@@ -127,9 +125,6 @@ char	*clean_path(char *s)
 				depth = tmp_depth + 1;
 			else
 			{
-				printf("Ici : depth = %d, old = %d\n", depth, tmp_depth);
-				printf("change curr from %d to %d\n", curr, tmp_depth);
-				printf("change i from %d to %d\n", i, tab_depth[curr - (tmp_depth - depth)] + 1);
 				ft_strcpy(s + tab_depth[curr - (tmp_depth - depth)], s + i);
 				i = tab_depth[curr - (tmp_depth - depth)];
 				curr = tmp_depth;
@@ -148,7 +143,7 @@ void	sanitize_path(t_srv *srv, char **tab)
 	int		depth;
 	char	*tmp;
 
-	i = 2;
+	i = 0;
 	while (tab[i])
 	{
 		if (*tab[i] == '/')
@@ -175,16 +170,40 @@ void	free_tab(char **tab)
 	free(tab);
 }
 
+int	fork_for_write(struct s_fork_params p, struct s_srv *srv, int sock, char *input) {
+	pid_t				child;
+	int					ret_child;
+	char				*str;
+	char				**tmp;
+
+	if ((child = fork()) == 0)
+	{
+		dup2(sock, 1);
+		// dup2(sock, 2);
+		if (!(*input))
+			input = ".";
+		str = malloc(p.exec_len + ft_strlen(input));
+		ft_strcpy(str, p.exec);
+		ft_strcat(str, input);
+		tmp = ft_strsplitwhite(str);
+		sanitize_path(srv, tmp + p.first_arg);
+		execv(p.bin, tmp);
+		free_tab(tmp);
+		free(str);
+		exit(0);
+	}
+	else
+		wait4(child, &ret_child, 0, NULL);
+	return (ret_child);
+}
+
 void	handle_list(struct s_srv *srv, char *input)
 {
 	int					sock;
-	pid_t				child;
 	socklen_t			cs;
 	struct sockaddr_in	csin;
-	int					ret_child;
-	char				**tmp;
-	char				*str;
 	char				*rsp;
+	int					ret_child;
 
 	ft_printf("LIST\n");
 	(void)srv;
@@ -194,29 +213,11 @@ void	handle_list(struct s_srv *srv, char *input)
 		send(srv->cs, "425 Can't build data connection\n", 32, 0);
 		return ;
 	}
-	send(srv->cs, "150 Opening BINARY mode data connection for 'file list'.\n", 57, 0);
+	send(srv->cs, "150 Opening BINARY mode data connection.\n", 41, 0);
 	if ((sock = accept(srv->sock_pasv, (struct sockaddr*)&csin, &cs)) == -1)
 			send(srv->cs, "425 Can't build data connection\n", 32, 0);
-	if ((child = fork()) == 0)
-	{
-		dup2(sock, 1);
-		dup2(sock, 2);
-		if (!(*input))
-			input = ".";
-		str = malloc(8 + ft_strlen(input));
-		ft_strcpy(str, "ls -la ");
-		ft_strcat(str, input);
-		tmp = ft_strsplitwhite(str);
-		sanitize_path(srv, tmp);
-		execv("/bin/ls", tmp);
-		free_tab(tmp);
-		free(str);
-		exit(0);
-	}
-	else
-	{
-		wait4(child, &ret_child, 0, NULL);
-	}
+
+	ret_child = fork_for_write((struct s_fork_params){"ls -lLa ", "/bin/ls", 9, 2}, srv, sock, input);
 	if (!ret_child)
 		send(srv->cs, "226 Transfer complete.\n", 23, 0);
 	else
@@ -244,7 +245,7 @@ void	handle_user(t_srv *srv, char *input)
 		send(srv->cs, "500 : command not understood.\n", 30, 0);
 		return ;
 	}
-	tmp[0] = '\0';
+	*tmp = '\0';
 	srv->id_user = search_user(srv, input);
 }
 
@@ -258,7 +259,7 @@ void	handle_pass(t_srv *srv, char *input)
 		send(srv->cs, "530 Login incorrect.\n", 21, 0);
 		return ;
 	}
-	tmp[0] = '\0';
+	*tmp = '\0';
 	if (srv->id_user == -1u || srv->id_user > SOCK_CONNECTION_QUEUE)
 		send(srv->cs, "500 : command not understood.\n", 30, 0);
 	else if (check_passwd(srv, input))
@@ -282,7 +283,7 @@ void	handle_cwd(struct s_srv *srv, char *input)
 	char		*tmp;
 	char		*tmp2;
 	char		*rsp;
-	int			fd;
+	DIR			*fd;
 
 	ft_printf("CWD\n");
 	input[ft_strlen(input) - 1] = '\0';
@@ -297,7 +298,7 @@ void	handle_cwd(struct s_srv *srv, char *input)
 		send(srv->cs, "550 No such file or directory.\n", 31, 0);
 		return ;
 	}
-	else if ((fd = open(tmp, 0)) == -1)
+	else if (!(fd = opendir(tmp)))
 	{
 		send(srv->cs, "550 No such file or directory.\n", 31, 0);
 		return ;
@@ -311,7 +312,7 @@ void	handle_cwd(struct s_srv *srv, char *input)
 		tmp[ft_strlen(tmp) + 1] = 0;
 		tmp[ft_strlen(tmp)] = '/';
 	}
-	close(fd);
+	closedir(fd);
 	free(srv->user_path);
 	srv->user_path = tmp;
 	send(srv->cs, "250 CWD command successful.\n", 28, 0);
@@ -343,16 +344,82 @@ void	handle_quit(t_srv *srv, char *input)
 
 void	handle_retr(struct s_srv *srv, char *input)
 {
+	int					sock;
+	socklen_t			cs;
+	int					ret_child;
+	struct sockaddr_in	csin;
+	char				*rsp;
+
 	ft_printf("RETR\n");
-	(void)srv;
-	(void)input;
+	input[ft_strlen(input) - 1] = 0;
+	if (srv->sock_pasv == -1)
+	{
+		send(srv->cs, "425 Can't build data connection\n", 32, 0);
+		return ;
+	}
+	send(srv->cs, "150 Opening BINARY mode data connection.\n", 41, 0);
+	if ((sock = accept(srv->sock_pasv, (struct sockaddr*)&csin, &cs)) == -1)
+			send(srv->cs, "425 Can't build data connection\n", 32, 0);
+	ret_child = fork_for_write((struct s_fork_params){"cat ", "/bin/cat", 5, 1}, srv, sock, input);
+	if (!ret_child)
+		send(srv->cs, "226 Transfer complete.\n", 23, 0);
+	else
+	{
+		rsp = malloc(ft_strlen(input) + 34);
+		ft_strcpy(rsp, "550 ");
+		ft_strcat(rsp, input);
+		ft_strcat(rsp, ": No such file or directory.\n");
+		send(srv->cs, rsp, ft_strlen(input) + 33, 0);
+		free(rsp);
+	}
+	if (sock != -1)
+		close(sock);
+	// close(srv->sock_pasv);
+	// srv->sock_pasv = -1;
 }
 
 void	handle_stor(struct s_srv *srv, char *input)
 {
+	int					sock;
+	socklen_t			cs;
+	struct sockaddr_in	csin;
+	char				*tmp;
+	ssize_t				rcv_length;
+	int					fd_to_write;
+	char				buff[RSP_BUFF + 1];
+
 	ft_printf("STOR\n");
-	(void)srv;
-	(void)input;
+	input[ft_strlen(input) - 1] = 0;
+	if ((tmp = ft_strrchr(input, '/')))
+		input = tmp + 1;
+	printf("tmp = %s\n", input);
+	tmp = ft_strjoin(srv->user_path, input);
+	if ((fd_to_write = open(tmp, O_RDWR | O_CREAT, 0644)) == -1)
+	{
+		send(srv->cs, "553 Requested action not taken.\n", 32, 0);
+		return ;
+	}
+	if (srv->sock_pasv == -1)
+	{
+		send(srv->cs, "425 Can't build data connection\n", 32, 0);
+		return ;
+	}
+	send(srv->cs, "150 Opening BINARY mode data connection.\n", 41, 0);
+	if ((sock = accept(srv->sock_pasv, (struct sockaddr*)&csin, &cs)) == -1)
+	{
+		send(srv->cs, "425 Can't build data connection\n", 32, 0);
+		return ;
+	}
+	printf("coucou hibou = %d\n", sock);
+	while ((rcv_length = recv(sock, buff, RSP_BUFF, 0)) > 0)
+	{
+		printf("coucou\n");
+		write(fd_to_write, buff, rcv_length);
+	}
+	printf("coucou tu veux\n");
+	send(srv->cs, "226 Transfer complete.\n", 23, 0);
+	if (sock != -1)
+		close(sock);
 }
 
 void	convert_port_to_string(uint16_t port, char *buff)
