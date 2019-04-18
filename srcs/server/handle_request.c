@@ -282,6 +282,7 @@ void	handle_cwd(struct s_srv *srv, char *input)
 	char		*tmp;
 	char		*tmp2;
 	char		*rsp;
+	int			fd;
 
 	ft_printf("CWD\n");
 	input[ft_strlen(input) - 1] = '\0';
@@ -296,14 +297,21 @@ void	handle_cwd(struct s_srv *srv, char *input)
 		send(srv->cs, "550 No such file or directory.\n", 31, 0);
 		return ;
 	}
+	else if ((fd = open(tmp, 0)) == -1)
+	{
+		send(srv->cs, "550 No such file or directory.\n", 31, 0);
+		return ;
+	}
 	if (tmp[ft_strlen(tmp) - 1] != '/')
 	{
+		free(tmp2);
 		tmp2 = malloc(ft_strlen(tmp) + 2);
 		ft_strcpy(tmp2, tmp);
 		tmp = tmp2;
 		tmp[ft_strlen(tmp) + 1] = 0;
 		tmp[ft_strlen(tmp)] = '/';
 	}
+	close(fd);
 	free(srv->user_path);
 	srv->user_path = tmp;
 	send(srv->cs, "250 CWD command successful.\n", 28, 0);
