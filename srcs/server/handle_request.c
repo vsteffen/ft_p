@@ -29,6 +29,7 @@ void	handle_request(t_srv *srv, char *request)
 	char		*response_tmp;
 
 	i = 0;
+	printf("r = [%s]\n", request);
 	if (ft_strlen(request) > 2 && request[ft_strlen(request) - 2] == 0xd)
 	{
 		request[ft_strlen(request) - 2] = '\n';
@@ -245,7 +246,9 @@ void	handle_user(t_srv *srv, char *input)
 		send(srv->cs, "500 : command not understood.\n", 30, 0);
 		return ;
 	}
+	printf("input = [%s]\n", input);
 	*tmp = '\0';
+	printf("input = [%s]\n", input);
 	srv->id_user = search_user(srv, input);
 }
 

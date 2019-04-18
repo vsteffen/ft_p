@@ -1,13 +1,13 @@
 #include <clt.h>
 
 struct s_cmd	g_cmd[] = {
-	{"LS", 3, handle_list},
+	{"LS\n", 3, handle_list},
 	{"LS ", 3, handle_list},
-	{"LOGIN", 6, handle_auth},
+	{"LOGIN\n", 6, handle_auth},
 	{"LOGIN ", 6, handle_auth},
-	{"QUIT", 5, handle_quit},
+	{"QUIT\n", 5, handle_quit},
 	{"CD ", 3, handle_cd},
-	{"PWD", 4, handle_pwd},
+	{"PWD\n", 4, handle_pwd},
 	{"GET ", 4, handle_get},
 	{"PUT ", 4, handle_put},
 	{NULL, 0, NULL},
@@ -178,6 +178,7 @@ void	parse_cmd(char *input, t_clt *clt)
 	{
 		if (!ft_strncmp(g_cmd[i].key, tmp, g_cmd[i].len_key))
 		{
+			input[ft_strlen(input) - 1] = 0;
 			g_cmd[i].f(clt, input + g_cmd[i].len_key - 1);
 			break ;
 		}

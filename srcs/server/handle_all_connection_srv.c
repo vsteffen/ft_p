@@ -40,6 +40,7 @@ char	*get_response(t_srv *srv, char *response)
 		len = ft_strlen(response);
 		next = NULL;
 	}
+	response[len] = 0;
 	write(1, response, len);
 	return (response);
 }
