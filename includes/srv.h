@@ -50,7 +50,7 @@ void				free_users(char *users[SOCK_CONNECTION_QUEUE + 1][2]);;
 void				handle_all_connection_srv(t_srv *srv);
 void				handle_connection(t_srv *clt);
 void				handle_request(t_srv *srv, char *request);
-void				exit_message(char *message, uint8_t ret);
+void				exit_message(char *message, uint8_t ret, t_srv *srv);
 
 void				handle_request(t_srv *srv, char *request);
 
@@ -59,7 +59,7 @@ void				signal_handler_srv(int s);
 int					create_client(char *addr, uint16_t port);
 char				*get_docs_path();
 
-void				exit_socket(char *message, int ret, int sock);
+void				exit_socket(char *message, int ret, int sock, t_srv *srv);
 
 void				handle_list(struct s_srv *srv, char *input);
 void				handle_cwd(struct s_srv *srv, char *input);

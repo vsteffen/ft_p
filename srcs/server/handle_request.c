@@ -141,7 +141,6 @@ char	*clean_path(char *s)
 void	sanitize_path(t_srv *srv, char **tab)
 {
 	size_t	i;
-	int		depth;
 	char	*tmp;
 
 	i = 0;
@@ -285,7 +284,6 @@ void	handle_cwd(struct s_srv *srv, char *input)
 {
 	char		*tmp;
 	char		*tmp2;
-	char		*rsp;
 	DIR			*fd;
 
 	ft_printf("CWD\n");

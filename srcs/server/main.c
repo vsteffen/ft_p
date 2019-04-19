@@ -18,13 +18,18 @@ void	usage(const char *prog)
 	exit(-1);
 }
 
-void	exit_message(char *message, uint8_t ret)
+void	exit_message(char *message, uint8_t ret, t_srv *srv)
 {
+	if (srv)
+	{
+		free(srv->docs);
+		free(srv->user_path);
+	}
 	ft_printf(BIN_SRV": %s\n", message);
 	exit(ret);
 }
 
-void	init_document_directory(t_srv *srv, const char *av_0)
+void	init_document_directory(t_srv *srv)
 {
 	DIR *		dir;
 
@@ -33,13 +38,13 @@ void	init_document_directory(t_srv *srv, const char *av_0)
 	if ((dir = opendir(SRV_DOCS)) == NULL)
 	{
 		free(srv->docs);
-		exit_message("Failed to create docs folder", 0);
+		exit_message("Failed to create docs folder", 0, srv);
 	}
 	if (closedir(dir) == -1)
 	{
 		free(srv->docs);
 		free(dir);
-		exit_message("Can't close "SRV_DOCS" directory", 1);
+		exit_message("Can't close "SRV_DOCS" directory", 1, srv);
 	}
 }
 
@@ -50,15 +55,15 @@ int		create_server(uint16_t port, int client_nbr)
 	struct sockaddr_in	sin;
 
 	if ((proto = getprotobyname("tcp")) == 0)
-		exit_message("Failed to get protocol requested", 1);
+		exit_message("Failed to get protocol requested", 1, NULL);
 	sock = socket(PF_INET, SOCK_STREAM, proto->p_proto);
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (bind(sock, (const struct sockaddr *)&sin, sizeof(sin)) == -1)
-		exit_message("Failed to bind socket", 2);
+		exit_message("Failed to bind socket", 2, NULL);
 	if (listen(sock, client_nbr) == -1)
-		exit_message("Failed to listen socket", 3);
+		exit_message("Failed to listen socket", 3, NULL);
 	return (sock);
 }
 
@@ -70,7 +75,7 @@ int		main(int ac, const char **av)
 
 	if (ac != 2)
 		usage(av[0]);
-	init_document_directory(&srv, av[0]);
+	init_document_directory(&srv);
 	init_users(av[0], &srv);
 	srv.sock = create_server((uint16_t)ft_atoi(av[1]), SOCK_CONNECTION_QUEUE);
 	srv.auth = 0;

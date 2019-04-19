@@ -1,13 +1,13 @@
 #include <clt.h>
 
 struct s_cmd	g_cmd[] = {
-	{"LS\n", 3, handle_list},
+	{"LS", 3, handle_list},
 	{"LS ", 3, handle_list},
-	{"LOGIN\n", 6, handle_auth},
+	{"LOGIN", 6, handle_auth},
 	{"LOGIN ", 6, handle_auth},
-	{"QUIT\n", 5, handle_quit},
+	{"QUIT", 5, handle_quit},
 	{"CD ", 3, handle_cd},
-	{"PWD\n", 4, handle_pwd},
+	{"PWD", 4, handle_pwd},
 	{"GET ", 4, handle_get},
 	{"PUT ", 4, handle_put},
 	{NULL, 0, NULL},
@@ -151,11 +151,12 @@ void	send_data(t_clt *clt, char *cmd, char *param)
 
 	len_param = param ? ft_strlen(param) : 0;
 	len_cmd = ft_strlen(cmd);
-	request = malloc(len_cmd + len_param + 1);
+	request = malloc(len_cmd + len_param + 2);
 	ft_strcpy(request, cmd);
 	if (param)
-		ft_strcpy(request + len_cmd, param);
+		ft_strcat(request + len_cmd, param);
 	request[len_cmd + len_param] = '\n';
+	request[len_cmd + len_param + 1] = 0;
 	if (send(clt->sock, request, len_cmd + len_param + 1, 0) == -1)
 	{
 		free(request);
@@ -178,7 +179,6 @@ void	parse_cmd(char *input, t_clt *clt)
 	{
 		if (!ft_strncmp(g_cmd[i].key, tmp, g_cmd[i].len_key))
 		{
-			input[ft_strlen(input) - 1] = 0;
 			g_cmd[i].f(clt, input + g_cmd[i].len_key - 1);
 			break ;
 		}
