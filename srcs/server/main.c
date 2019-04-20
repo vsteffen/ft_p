@@ -43,7 +43,6 @@ void	init_document_directory(t_srv *srv)
 	if (closedir(dir) == -1)
 	{
 		free(srv->docs);
-		free(dir);
 		exit_message("Can't close "SRV_DOCS" directory", 1, srv);
 	}
 }

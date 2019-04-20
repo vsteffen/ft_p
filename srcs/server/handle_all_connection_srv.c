@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   serveur.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: vsteffen <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/02/18 22:11:47 by vsteffen          #+#    #+#             */
+/*   Updated: 2019/02/18 22:11:49 by vsteffen         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <srv.h>
 
 void	exit_socket(char *message, int ret, int sock, t_srv *srv)
@@ -12,36 +24,24 @@ char	*get_response(t_srv *srv, char *response)
 	int			len;
 	static char	*next = NULL;
 
-	next = next ? next : response; 
+	next = next ? next : response;
 	if (next == response || !*next)
 	{
 		if ((rcv_length = recv(srv->cs, response, RSP_BUFF, 0)) <= 0)
-		{
-			if (rcv_length == 0)
-				exit_socket("Connection close by ftp client", 1, srv->cs, srv);
-			else
-				exit_socket("Error while receving data from ftp client", 1,
-					srv->cs, srv);
-		}
+			rcv_length == 0 ? exit_socket("Connection close by ftp client", 1,
+srv->cs, srv) : exit_socket("Error while receving data from ftp client",
+1, srv->cs, srv);
 		response[rcv_length] = '\0';
 	}
 	else
-		ft_strcpy(response , next);
-	// ft_printf("Response = [%s]\n", response);
+		ft_strcpy(response, next);
 	next = ft_strchr(response, '\n') + 1;
-	if (next && *next)
-	{
-		len = next - response;
+	next = !next || !*next ? NULL : next;
+	len = next ? next - response : ft_strlen(response);
+	if (next)
 		while (next[1] == '\n' || next[0] == '\n')
 			next = ft_strchr(next, '\n') + 1;
-	}
-	else
-	{
-		len = ft_strlen(response);
-		next = NULL;
-	}
 	response[len] = 0;
-	write(1, response, len);
 	return (response);
 }
 
@@ -59,9 +59,9 @@ void	handle_all_connection_srv(t_srv *srv)
 {
 	while (42)
 	{
-		if ((srv->cs = accept(srv->sock, (struct sockaddr*)&srv->csin, &srv->cs)) == (socklen_t)-1)
+		if ((srv->cs = accept(srv->sock,
+			(struct sockaddr*)&srv->csin, &srv->cs)) == (socklen_t)(-1))
 			exit_message("Failed to accept connection on socket", 4, srv);
-		ft_printf(BIN_SRV": Connection accepted from %s:%d\n", inet_ntoa(srv->csin.sin_addr), ntohs(srv->csin.sin_port));
 		if (fork() == 0)
 			handle_connection(srv);
 		else

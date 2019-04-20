@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   serveur.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: vsteffen <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/02/18 22:11:47 by vsteffen          #+#    #+#             */
+/*   Updated: 2019/02/18 22:11:49 by vsteffen         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef CLT_H
 # define CLT_H
 
@@ -5,7 +17,7 @@
 # define BIN_CLT "client"
 
 typedef struct		s_clt {
-	int 				sock;
+	int8_t				sock;
 	char				*addr;
 	uint16_t			port;
 	socklen_t			cs;
@@ -15,14 +27,13 @@ typedef struct		s_clt {
 	int8_t				old_termios_set;
 }					t_clt;
 
-typedef void	(t_func_cmd)(t_clt *clt, char *args);
+typedef void		(t_func_cmd)(t_clt *clt, char *args);
 
-struct		s_cmd {
+struct				s_cmd {
 	char		*key;
 	size_t		len_key;
 	t_func_cmd	*f;
 };
-
 
 void				handle_connection_clt(t_clt *clt);
 void				exit_message(char *message, uint8_t ret);

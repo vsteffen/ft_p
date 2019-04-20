@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   serveur.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: vsteffen <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/02/18 22:11:47 by vsteffen          #+#    #+#             */
+/*   Updated: 2019/02/18 22:11:49 by vsteffen         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef SRV_H
 # define SRV_H
 
@@ -7,7 +19,7 @@
 # define USER_FILE "users.conf"
 
 typedef struct		s_srv {
-	int 				sock;
+	int					sock;
 	uint16_t			port;
 	socklen_t			cs;
 	struct sockaddr_in	csin;
@@ -17,14 +29,14 @@ typedef struct		s_srv {
 	int8_t				login;
 	int8_t				auth;
 	char				*user[SOCK_CONNECTION_QUEUE + 1][2];
-	char				*docs; // Must free it
-	char				*user_path; // Must free it
+	char				*docs;
+	char				*user_path;
 	int					sock_pasv;
 }					t_srv;
 
-typedef void	(t_func_cmd)(t_srv *srv, char *args);
+typedef void		(t_func_cmd)(t_srv *srv, char *args);
 
-struct		s_fork_params
+struct				s_fork_params
 {
 	char		*exec;
 	char		*bin;
@@ -32,7 +44,7 @@ struct		s_fork_params
 	uint8_t		first_arg;
 };
 
-struct		s_cmd {
+struct				s_cmd {
 	char		*key;
 	size_t		len_key;
 	t_func_cmd	*f;
@@ -45,7 +57,7 @@ size_t				search_user(t_srv *srv, char *user);
 
 int8_t				check_passwd(t_srv *srv, char *pass);
 
-void				free_users(char *users[SOCK_CONNECTION_QUEUE + 1][2]);;
+void				free_users(char *users[SOCK_CONNECTION_QUEUE + 1][2]);
 
 void				handle_all_connection_srv(t_srv *srv);
 void				handle_connection(t_srv *clt);
