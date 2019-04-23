@@ -51,6 +51,15 @@ struct				s_cmd {
 	int			auth;
 };
 
+struct				s_fln
+{
+	uint	i;
+	int		depth;
+	int		tmp_depth;
+	uint	tab_depth[256];
+	uint	curr;
+};
+
 void				init_users(t_srv *srv);
 char				*md5(char *md5);
 size_t				search_user(t_srv *srv, char *user);
@@ -86,5 +95,12 @@ void				handle_quit(t_srv *srv, char *input);
 void				handle_syst(struct s_srv *srv, char *input);
 
 int					create_server(uint16_t port, int cient_nbr);
+
+void				sanitize_path(t_srv *srv, char **tab);
+char				*clean_path(char *s);
+
+int					fork_for_write(struct s_fork_params p, struct s_srv *srv,
+	int sock, char *input);
+void				no_such_file(struct s_srv *srv, char *input);
 
 #endif

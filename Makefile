@@ -41,6 +41,7 @@ ROOT  	=	$(shell /bin/pwd)
 OPATH 	=	$(ROOT)/objs
 CPATH 	=	$(ROOT)/srcs
 SRVPATH	=	/server
+CMDPATH =	/cmd
 CLTPATH	=	/client
 LPATH	=	$(LIBFT)/libft.a $(MD5)/md5.a
 HPATH 	=	-I $(ROOT)/includes -I $(LIBFT)/includes
@@ -48,8 +49,15 @@ HPATH 	=	-I $(ROOT)/includes -I $(LIBFT)/includes
 SRC_SRV	=	$(SRVPATH)/main.c \
 			$(SRVPATH)/handle_all_connection_srv.c \
 			$(SRVPATH)/signals_srv.c \
-			$(SRVPATH)/handle_request.c \
-			$(SRVPATH)/auth.c
+			$(SRVPATH)/auth.c \
+			$(SRVPATH)/path_tools.c \
+			$(SRVPATH)$(CMDPATH)tools.c \
+			$(SRVPATH)$(CMDPATH)pasv.c \
+			$(SRVPATH)$(CMDPATH)path.c \
+			$(SRVPATH)$(CMDPATH)auth.c \
+			$(SRVPATH)$(CMDPATH)others.c \
+			$(SRVPATH)$(CMDPATH)put_get.c \
+			$(SRVPATH)/handle_cmd_srv.c
 
 SRC_CLT	=	$(CLTPATH)/main.c \
 			$(CLTPATH)/handle_connection_clt.c \
