@@ -29,14 +29,12 @@ void	handle_request(t_srv *srv, char *request)
 	char		*response_tmp;
 
 	i = 0;
-	printf("r = [%s]\n", request);
 	if (ft_strlen(request) > 2 && request[ft_strlen(request) - 2] == 0xd)
 	{
 		request[ft_strlen(request) - 2] = '\n';
 		request[ft_strlen(request) - 1] = 0;
 	}
 	ft_strtoupper((tmp = ft_strdup(request)));
-	printf("r = [%s]\n", request);
 	while (g_cmd[i].key)
 	{
 		if (!ft_strncmp(g_cmd[i].key, tmp, g_cmd[i].len_key))
@@ -49,20 +47,15 @@ void	handle_request(t_srv *srv, char *request)
 		}
 		i++;
 	}
-	if (!g_cmd[i].key)
+	if (!g_cmd[i].key && *request != '\n')
 	{
-		ft_printf("la\n");
-		if (*request != '\n')
-		{
-			ft_printf("pas la\n");
-			response_tmp = malloc(ft_strlen(request) + 30);
-			ft_strcpy(response_tmp, "500 ");
-			request[ft_strlen(request) - 1] = 0;
-			ft_strcat(response_tmp, request);
-			ft_strcat(response_tmp, ": command not understood.\n");
-			send(srv->cs, response_tmp, ft_strlen(request) + 29, 0);
-			free(response_tmp);
-		}
+		response_tmp = malloc(ft_strlen(request) + 30);
+		ft_strcpy(response_tmp, "500 ");
+		request[ft_strlen(request) - 1] = 0;
+		ft_strcat(response_tmp, request);
+		ft_strcat(response_tmp, ": command not understood.\n");
+		send(srv->cs, response_tmp, ft_strlen(request) + 29, 0);
+		free(response_tmp);
 	}
 	free(tmp);
 }
@@ -179,7 +172,6 @@ int	fork_for_write(struct s_fork_params p, struct s_srv *srv, int sock, char *in
 	if ((child = fork()) == 0)
 	{
 		dup2(sock, 1);
-		// dup2(sock, 2);
 		if (!(*input))
 			input = ".";
 		str = malloc(p.exec_len + ft_strlen(input));
@@ -231,23 +223,16 @@ void	handle_list(struct s_srv *srv, char *input)
 	}
 	if (sock != -1)
 		close(sock);
-	// close(srv->sock_pasv);
-	// srv->sock_pasv = -1;
 }
 
 void	handle_user(t_srv *srv, char *input)
 {
-	char	*tmp;
-
 	send(srv->cs, "331 Password required for admin.\n", 33, 0);
-	if (!(tmp = ft_strrchr(input, '\n')))
+	if (!ft_strrchr(input, '\n'))
 	{
 		send(srv->cs, "500 : command not understood.\n", 30, 0);
 		return ;
 	}
-	printf("input = [%s]\n", input);
-	*tmp = '\0';
-	printf("input = [%s]\n", input);
 	srv->id_user = search_user(srv, input);
 }
 
@@ -286,7 +271,6 @@ void	handle_cwd(struct s_srv *srv, char *input)
 	char		*tmp2;
 	DIR			*fd;
 
-	ft_printf("CWD\n");
 	input[ft_strlen(input) - 1] = '\0';
 	if (*input == '/')
 		tmp = ft_strjoin(SRV_DOCS, input + 1);
@@ -351,7 +335,6 @@ void	handle_retr(struct s_srv *srv, char *input)
 	struct sockaddr_in	csin;
 	char				*rsp;
 
-	ft_printf("RETR\n");
 	input[ft_strlen(input) - 1] = 0;
 	if (srv->sock_pasv == -1)
 	{
@@ -375,8 +358,6 @@ void	handle_retr(struct s_srv *srv, char *input)
 	}
 	if (sock != -1)
 		close(sock);
-	// close(srv->sock_pasv);
-	// srv->sock_pasv = -1;
 }
 
 void	handle_stor(struct s_srv *srv, char *input)
@@ -389,11 +370,9 @@ void	handle_stor(struct s_srv *srv, char *input)
 	int					fd_to_write;
 	char				buff[RSP_BUFF + 1];
 
-	ft_printf("STOR\n");
 	input[ft_strlen(input) - 1] = 0;
 	if ((tmp = ft_strrchr(input, '/')))
 		input = tmp + 1;
-	printf("tmp = %s\n", input);
 	tmp = ft_strjoin(srv->user_path, input);
 	if ((fd_to_write = open(tmp, O_RDWR | O_CREAT, 0644)) == -1)
 	{
@@ -411,13 +390,8 @@ void	handle_stor(struct s_srv *srv, char *input)
 		send(srv->cs, "425 Can't build data connection\n", 32, 0);
 		return ;
 	}
-	printf("coucou hibou = %d\n", sock);
 	while ((rcv_length = recv(sock, buff, RSP_BUFF, 0)) > 0)
-	{
-		printf("coucou\n");
 		write(fd_to_write, buff, rcv_length);
-	}
-	printf("coucou tu veux\n");
 	send(srv->cs, "226 Transfer complete.\n", 23, 0);
 	if (sock != -1)
 		close(sock);
@@ -445,7 +419,6 @@ void	handle_pasv(struct s_srv *srv, char *input)
 		close(srv->sock_pasv);
 	srv->sock_pasv = create_server(0, 1);
 	getsockname(srv->sock_pasv, (struct sockaddr *)&tmp_sin, &tmp_slen);
-	// ft_printf(tmp_sin.sin_portntohs(tmp_sin.sin_port));
 	ft_strcpy(ret, "227 Entering Passive Mode (127,0,0,1,");
 	convert_port_to_string(ntohs(tmp_sin.sin_port), ret + 37);
 	ft_strcat(ret, ")\n");
@@ -454,7 +427,6 @@ void	handle_pasv(struct s_srv *srv, char *input)
 
 void	handle_type(struct s_srv *srv, char *input)
 {
-	ft_printf("TYPE\n");
 	(void)input;
 	send(srv->cs, "200 Type set to I.\n", 19, 0);
 }

@@ -24,6 +24,12 @@ void	exit_message(char *message, uint8_t ret)
 	exit(ret);
 }
 
+void	exit_socket(char *message, int ret, int socket)
+{
+	close(socket);
+	exit_message(message, ret);
+}
+
 int		create_client(char *addr, uint16_t port)
 {
 	int					sock;

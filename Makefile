@@ -30,7 +30,7 @@ OBJ_CLT	=	$(patsubst %.c, $(OPATH)/%.o, $(SRC_CLT))
 
 OBJ = $(OBJ_SRV) $(OBJ_CLT)
 
-CFLAGS = -Wall -Wextra -g #-fsanitize=address
+CFLAGS = -Wall -Wextra -Werror -g
 
 LIB		=	$(ROOT)/lib
 LIBSRCS	=	$(ROOT)/libsrcs
@@ -54,7 +54,10 @@ SRC_SRV	=	$(SRVPATH)/main.c \
 SRC_CLT	=	$(CLTPATH)/main.c \
 			$(CLTPATH)/handle_connection_clt.c \
 			$(CLTPATH)/signals_clt.c \
-			$(CLTPATH)/handle_cmd.c
+			$(CLTPATH)/handle_cmd_get_auth.c \
+			$(CLTPATH)/handle_cmd_others.c \
+			$(CLTPATH)/request_tools.c \
+			$(CLTPATH)/pasv.c \
 
 SRC	=	$(SRC_SRV) $(SRC_CLT)
 

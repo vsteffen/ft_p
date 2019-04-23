@@ -51,7 +51,7 @@ struct				s_cmd {
 	int			auth;
 };
 
-void				init_users(const char *av_0, t_srv *srv);
+void				init_users(t_srv *srv);
 char				*md5(char *md5);
 size_t				search_user(t_srv *srv, char *user);
 

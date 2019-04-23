@@ -54,7 +54,7 @@ void	free_users(char *users[SOCK_CONNECTION_QUEUE + 1][2])
 	}
 }
 
-void	init_users(const char *av_0, t_srv *srv)
+void	init_users(t_srv *srv)
 {
 	int		fd;
 	char	*line;

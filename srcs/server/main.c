@@ -31,8 +31,7 @@ void	exit_message(char *message, uint8_t ret, t_srv *srv)
 
 void	init_document_directory(t_srv *srv)
 {
-	DIR *		dir;
-
+	DIR	*dir;
 
 	mkdir(SRV_DOCS, 0755);
 	if ((dir = opendir(SRV_DOCS)) == NULL)
@@ -75,7 +74,7 @@ int		main(int ac, const char **av)
 	if (ac != 2)
 		usage(av[0]);
 	init_document_directory(&srv);
-	init_users(av[0], &srv);
+	init_users(&srv);
 	srv.sock = create_server((uint16_t)ft_atoi(av[1]), SOCK_CONNECTION_QUEUE);
 	srv.auth = 0;
 	srv.sock_pasv = -1;
@@ -83,7 +82,8 @@ int		main(int ac, const char **av)
 	tmp_slen = sizeof(tmp_sin);
 	getsockname(srv.sock, (struct sockaddr *)&tmp_sin, &tmp_slen);
 	srv.port = ntohs(tmp_sin.sin_port);
-	ft_printf(BIN_SRV": Port use: [%u]\n"BIN_SRV": Waiting for connection ...\n", srv.port);
+	ft_printf(BIN_SRV": Port use: [%u]\n"BIN_SRV": Wa\
+iting for connection ...\n", srv.port);
 	srv.pid = 0;
 	get_srv(&srv, 1);
 	signal(SIGINT, signal_handler_srv);
