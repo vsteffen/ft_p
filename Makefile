@@ -51,12 +51,12 @@ SRC_SRV	=	$(SRVPATH)/main.c \
 			$(SRVPATH)/signals_srv.c \
 			$(SRVPATH)/auth.c \
 			$(SRVPATH)/path_tools.c \
-			$(SRVPATH)$(CMDPATH)tools.c \
-			$(SRVPATH)$(CMDPATH)pasv.c \
-			$(SRVPATH)$(CMDPATH)path.c \
-			$(SRVPATH)$(CMDPATH)auth.c \
-			$(SRVPATH)$(CMDPATH)others.c \
-			$(SRVPATH)$(CMDPATH)put_get.c \
+			$(SRVPATH)$(CMDPATH)/tools.c \
+			$(SRVPATH)$(CMDPATH)/pasv.c \
+			$(SRVPATH)$(CMDPATH)/path.c \
+			$(SRVPATH)$(CMDPATH)/auth.c \
+			$(SRVPATH)$(CMDPATH)/others.c \
+			$(SRVPATH)$(CMDPATH)/put_get.c \
 			$(SRVPATH)/handle_cmd_srv.c
 
 SRC_CLT	=	$(CLTPATH)/main.c \
@@ -142,7 +142,7 @@ $(OPATH)/%.o: $(CPATH)/%.c | $(PRE_CHECK_SUB)
 
 $(OPATH):
 	@echo $(PROJECT)": Creation of objects directory"
-	@$(MKDIR) $@ $@$(SRVPATH) $@$(CLTPATH)
+	@$(MKDIR) $@ $@$(SRVPATH) $@$(CLTPATH) $@$(SRVPATH)$(CMDPATH)
 
 clean:
 	@$(RM) -Rf $(OPATH)
