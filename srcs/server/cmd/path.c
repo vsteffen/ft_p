@@ -6,7 +6,7 @@
 /*   By: magouin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/23 20:58:44 by magouin           #+#    #+#             */
-/*   Updated: 2019/04/23 20:58:46 by magouin          ###   ########.fr       */
+/*   Updated: 2019/07/31 20:26:28 by vsteffen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,8 @@ void	handle_cwd(struct s_srv *srv, char *input)
 	char		*tmp2;
 	DIR			*fd;
 
-	fd = init_dir(srv, input, &tmp, &tmp2);
+	if (!(fd = init_dir(srv, input, &tmp, &tmp2)))
+		return ;
 	if (tmp[ft_strlen(tmp) - 1] != '/')
 	{
 		free(tmp2);

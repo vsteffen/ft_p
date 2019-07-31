@@ -6,7 +6,7 @@
 /*   By: magouin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/23 22:25:11 by magouin           #+#    #+#             */
-/*   Updated: 2019/04/23 22:25:13 by magouin          ###   ########.fr       */
+/*   Updated: 2019/07/31 20:22:51 by vsteffen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void	update_tab_depth(struct s_fln *n, char *s)
 		ft_strcpy(s + n->tab_depth[n->curr - (n->
 			tmp_depth - n->depth)], s + n->i);
 		n->i = n->tab_depth[n->curr - (n->tmp_depth - n->depth)];
-		n->curr = n->tmp_depth;
+		n->curr = n->tmp_depth - 1;
 	}
 }
 
@@ -63,15 +63,12 @@ char	*clean_path(char *s)
 	{
 		if (s[n.i] == '/')
 		{
-			n.tab_depth[n.curr] = n.i;
-			n.i++;
+			n.tab_depth[n.curr] = (n.i)++;
 			n.tmp_depth = n.depth;
 			if (s[n.i] == '.')
-				while (s[++n.i] == '.')
-				{
+				while (s[++(n.i)] == '.')
 					if (n.depth-- == 1)
 						return (NULL);
-				}
 			update_tab_depth(&n, s);
 			n.curr++;
 			n.i--;

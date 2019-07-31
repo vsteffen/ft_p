@@ -6,7 +6,7 @@
 /*   By: vsteffen <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/18 22:11:47 by vsteffen          #+#    #+#             */
-/*   Updated: 2019/02/18 22:11:49 by vsteffen         ###   ########.fr       */
+/*   Updated: 2019/07/31 20:21:16 by vsteffen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,7 @@ int		main(int ac, const char **av)
 
 	if (ac != 2)
 		usage(av[0]);
+	close(2);
 	init_document_directory(&srv);
 	init_users(&srv);
 	srv.sock = create_server((uint16_t)ft_atoi(av[1]), SOCK_CONNECTION_QUEUE);
